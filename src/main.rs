@@ -168,7 +168,7 @@ fn aoc3_1_slope(xslope: usize, yslope: usize) -> Result<usize> {
     let mut xpos = 0;
     let tree = '#';
     let mut tree_count = 0;
-    while (xpos < input.len()) {
+    while xpos < input.len() {
         let line = input.iter().cloned().nth(xpos).unwrap_or("".to_string());
         let ch = line.chars().nth(ypos).unwrap_or_default();
         //println!("Walking: {} at {}/{}", ch, xpos, ypos);

@@ -65,6 +65,7 @@ fn aoc1_1() -> Result<()> {
     let input: Vec<i32> = input.iter().map(|x| x.parse::<i32>().unwrap()).collect();
     for i in input.clone() {
         for j in input.iter().filter(|x| **x != i) {
+            //println!("{} + {} = {}", i, j, i + j);
             if i + j == 2020 {
                 println!("{} + {} = 2020, {} * {} = {}", i, j, i, j, i * j);
                 return Ok(())
@@ -80,6 +81,7 @@ fn aoc1_2() -> Result<()> {
     for i in input.clone() {
         for j in input.clone().iter().filter(|x| **x != i) {
             for k in input.iter().filter(|y| **y != i && **y != *j) {
+                //println!("{} + {} + {} = {}", i, j, k, i + j + k);
                 if i + j + k == 2020 {
                     println!("{} + {} + {} = 2020, {} * {} * {} = {}", i, j, k, i, j, k, i * j * k);
                     return Ok(())
@@ -116,6 +118,7 @@ fn aoc2_1() -> Result<()> {
                 acc
             }
         });
+        //println!("{} => {}{}", password, letter, count);
         if count <= max && count >= min {
             valid += 1;
         }
@@ -148,6 +151,7 @@ fn aoc2_2() -> Result<()> {
         let pos_a = pos_a_l == *letter;
         let pos_b_l = password.chars().nth(idx2 - 1).unwrap_or_default();
         let pos_b = pos_b_l == *letter;
+        //println!("{} => {}={} {}={}", password, pos_a_l, pos_a, pos_b_l, pos_b);
         if (pos_a && !pos_b) || (!pos_a && pos_b) {
             valid += 1;
         }
@@ -198,6 +202,7 @@ fn aoc4_1() -> Result<()> {
     for line in input {
         if line == "" {
             passport.sort_by(|a, b| b.0.cmp(&a.0));
+            //println!("{:?}", passport);
             passports.push(passport);
             passport = Vec::new();
         } else {

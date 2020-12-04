@@ -36,6 +36,9 @@ fn main() -> Result<()> {
     aoc3_1()?;
     aoc3_2()?;
 
+    prologue("AOC4");
+    aoc4_1()?;
+
     epilogue();
     Ok(())
 }
@@ -185,5 +188,181 @@ fn aoc3_2() -> Result<()> {
     let tree_count = tree_count * aoc3_1_slope(1, 7)?;
     let tree_count = tree_count * aoc3_1_slope(2, 1)?;
     println!("Result: {}", tree_count);
+    Ok(())
+}
+
+fn aoc4_1() -> Result<()> {
+    let input = read_file_lines("./aoc_4_1.txt")?;
+    let mut passport: Vec<(String, String)> = Vec::new();
+    let mut passports: Vec<Vec<(String, String)>> = Vec::new();
+    for line in input {
+        if line == "" {
+            passport.sort_by(|a, b| b.0.cmp(&a.0));
+            passports.push(passport);
+            passport = Vec::new();
+        } else {
+            for fields in line.split(' ') {
+                let kv: Vec<&str> = fields.split(':').collect();
+                passport.push((kv[0].to_string(), kv[1].to_string()));
+            }
+        }
+    }
+    #[derive(Debug)]
+    struct HasFields {
+        byr: bool,
+        iyr: bool,
+        eyr: bool,
+        hgt: bool,
+        hcl: bool,
+        ecl: bool,
+        pid: bool,
+        cid: bool,
+    };
+    
+    let mut valid = 0;
+    let mut valid_passports = Vec::new();
+    for passport in passports.clone() {
+        let mut hf = HasFields{ byr: false, iyr: false, eyr: false, hgt: false , ecl: false, pid: false, cid: false, hcl: false };
+        for field in &passport {
+            match &*field.0 {
+                "byr" => hf.byr = true,
+                "iyr" => hf.iyr = true,
+                "eyr" => hf.eyr = true,
+                "hgt" => hf.hgt = true,
+                "hcl" => hf.hcl = true,
+                "ecl" => hf.ecl = true,
+                "pid" => hf.pid = true,
+                "cid" => hf.cid = true,
+                _ => (),
+            }
+        }
+        if hf.byr && hf.iyr && hf.eyr && hf.hgt && hf.ecl && hf.pid && hf.hcl {
+            //println!("VALID => {:?}", passport);
+            valid += 1;
+            valid_passports.push(passport);
+        } else {
+            /*println!("INVALID => {:?}", passport);
+            if !hf.byr { println!("\t => MISSING BYR"); } 
+            if !hf.iyr { println!("\t => MISSING IYR"); }
+            if !hf.eyr { println!("\t => MISSING EYR"); }
+            if !hf.hgt { println!("\t => MISSING HGT"); }
+            if !hf.ecl { println!("\t => MISSING ECL"); }
+            if !hf.pid { println!("\t => MISSING PID"); }
+            if !hf.hcl { println!("\t => MISSING HCL"); }
+            if !hf.cid { println!("\t => MISSING CID"); }*/
+        }
+    }
+    println!("Valid passports: {}", valid);
+
+    aoc4_2(valid_passports)?;
+    Ok(())
+}
+
+fn aoc4_2(valid_passports: Vec<Vec<(String, String)>>) -> Result<()> {
+    let passports = valid_passports;
+    #[derive(Debug)]
+    struct HasFields {
+        byr: bool,
+        iyr: bool,
+        eyr: bool,
+        hgt: bool,
+        hcl: bool,
+        ecl: bool,
+        pid: bool,
+        cid: bool,
+    };
+    
+    let mut valid = 0;
+    for passport in passports {
+        let mut hf = HasFields{ byr: false, iyr: false, eyr: false, hgt: false , ecl: false, pid: false, cid: false, hcl: false };
+        //println!("\t\t\t{:?}", passport);
+        for field in &passport {
+            match &*field.0 {
+                "byr" => {
+                    let value = &*field.1;
+                    let byr: u16 = value.parse().unwrap_or(0);
+                    if byr >= 1920 && byr <= 2002 {
+                        hf.byr = true;
+                    } else {
+                        //println!("\t\tBYR: {}", byr)
+                    }
+                },
+                "iyr" => {
+                    let iyr = &*field.1;
+                    let iyr: u16 = iyr.parse().unwrap_or(0);
+                    if iyr >= 2010 && iyr <= 2020 {
+                        hf.iyr = true;
+                    } else {
+                        //println!("\t\tIYR: {}", iyr)
+                    }
+                },
+                "eyr" => {
+                    let eyr = &*field.1;
+                    let eyr: u16 = eyr.parse().unwrap_or(0);
+                    if eyr >= 2020 &&eyr <= 2030 {
+                        hf.eyr = true;
+                    } else {
+                        //println!("\t\tEYR: {}", eyr)
+                    }
+                },
+                "hgt" => {
+                    let hgt = &*field.1;
+                    if hgt.contains("in") {
+                        let hgt = hgt.trim_end_matches("in");
+                        let hgt: u16 = hgt.parse().unwrap_or(0);
+                        if hgt >= 59 && hgt <= 76 {
+                            hf.hgt = true;
+                        } else {
+                            //println!("\t\tHGT= {}in", hgt);
+                        }
+                    } else if hgt.contains("cm") {
+                        let hgt = hgt.trim_end_matches("cm");
+                        let hgt: u16 = hgt.parse().unwrap_or(0);
+                        if hgt >= 150 && hgt <= 193 {
+                            hf.hgt = true;
+                        } else {
+                            //println!("\t\tHGT= {}cm", hgt);
+                        }
+                    } else {
+                        continue;
+                    }
+                },
+                "hcl" => {
+                    hf.hcl = regex::Regex::new(r#"#[0-9a-f]{6}"#).unwrap().is_match(&field.1)
+                },
+                "ecl" => {
+                    hf.ecl = match &*field.1 {
+                        "amb" => true,
+                        "blu" => true,
+                        "brn" => true,
+                        "gry" => true,
+                        "grn" => true,
+                        "hzl" => true,
+                        "oth" => true,
+                        _ => false,
+                    }
+                },
+                "pid" => {
+                    hf.pid = regex::Regex::new(r#"\d"#).unwrap().is_match(&field.1) && field.1.len() == 9
+                },
+                _ => (),
+            }
+        }
+        if hf.byr && hf.iyr && hf.eyr && hf.hgt && hf.ecl && hf.pid && hf.hcl {
+            //println!("VALID => {:?}", passport);
+            valid += 1;
+        } else {
+            /*println!("INVALID => {:?}", passport);
+            if !hf.byr { println!("\t => INVALID BYR"); } 
+            if !hf.iyr { println!("\t => INVALID IYR"); }
+            if !hf.eyr { println!("\t => INVALID EYR"); }
+            if !hf.hgt { println!("\t => INVALID HGT"); }
+            if !hf.ecl { println!("\t => INVALID ECL"); }
+            if !hf.pid { println!("\t => INVALID PID"); }
+            if !hf.hcl { println!("\t => INVALID HCL"); }
+            println!();*/
+        }
+    }
+    println!("Valid passports: {}", valid);
     Ok(())
 }

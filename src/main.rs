@@ -39,6 +39,9 @@ fn main() -> Result<()> {
     prologue("AOC4");
     aoc4_1()?;
 
+    prologue("AOC5");
+    aoc5_1_2()?;
+
     epilogue();
     Ok(())
 }
@@ -58,6 +61,14 @@ fn read_file_lines(filename: &str) -> Result<Vec<String>> {
     let data = std::fs::read_to_string(filename.clone()).context(Io{filename})?;
     let data = data.split("\n").map(|x| x.to_owned()).collect();
     Ok(data)
+}
+
+fn read_file_lines_nenl(filename: &str) -> Result<Vec<String>> {
+    read_file_lines(filename).and_then(|mut x| {
+        assert_eq!("", x[x.len()-1]);
+        x.pop();
+        Ok(x)
+    })
 }
 
 fn aoc1_1() -> Result<()> {
@@ -369,5 +380,73 @@ fn aoc4_2(valid_passports: Vec<Vec<(String, String)>>) -> Result<()> {
         }
     }
     println!("Valid passports: {}", valid);
+    Ok(())
+}
+
+fn aoc5_1_2() -> Result<()> {
+    let bsp_idx = |m: i32, u: char, l: char, x: &str| -> i32 {
+        let required_steps = (m as f64).log10() as usize; 
+        let present_steps = x.chars().filter(|x| *x == u || *x == l).count();
+        assert!(present_steps > required_steps, "require {} steps, got {}", required_steps, present_steps);
+        let mut idx_lo = 0;
+        let mut idx_hi = m - 1;
+        for dir in x.chars() {
+            if dir == u {
+                idx_hi = idx_lo + ((idx_hi - idx_lo) / 2);
+                idx_lo = idx_lo;
+            } else if dir == l {
+                idx_lo = idx_lo + ((idx_hi - idx_lo) / 2 + 1);
+                idx_hi = idx_hi;
+            } else {
+                continue;
+            }
+            //println!("{} => idx_lo {}, idx_hi {}", dir, idx_lo, idx_hi);
+        }
+        //println!("finish BSP");
+        assert!(idx_lo == idx_hi, "idx_lo {} == idx_hi {}", idx_lo, idx_hi);
+        idx_lo
+    };
+    assert_eq!(44, bsp_idx(128, 'F', 'B', "FBFBBFF"), "Check Seat 44 Code");
+    assert_eq!(45, bsp_idx(128, 'F', 'B', "FBFBBFB"), "Check Seat 45 Code");
+    assert_eq!(109, bsp_idx(128, 'F', 'B', "BBFBBFB"), "Check Seat 109 Code");
+    let row_idx = |x: &str| bsp_idx(128, 'F', 'B', x);
+    let col_idx = |x: &str| bsp_idx(8, 'L', 'R', x);
+    let seat_id = |x: &str| -> i32 {
+        //println!("Running: {}", x);
+        let row = row_idx(x);
+        let col = col_idx(x);
+        row * 8 + col
+    };
+    assert_eq!(567, seat_id("BFFFBBFRRR"));
+    assert_eq!(119, seat_id("FFFBBBFRRR"));
+    assert_eq!(820, seat_id("BBFFBBFRLL"));
+
+    let input = read_file_lines_nenl("./aoc_5_1.txt")?;
+    let mut highest_seat_id = 0;
+    for line in  input.clone() {
+        let seat_id = seat_id(&line);
+        if seat_id > highest_seat_id {
+            highest_seat_id = seat_id;
+        }
+    }
+    println!("Highest Seat ID: {}", highest_seat_id);
+
+    let mut seats: Vec<bool> = Vec::new();
+    for _ in 0..highest_seat_id+1 {
+        seats.push(false);
+    }
+    for line in input.clone() {
+        let seat_id = seat_id(&line) as usize;
+        seats[seat_id] = true;
+    }
+    for i in 0..input.len() {
+        let cur_seat = seats[i];
+        let prv_seat = seats[(i.saturating_sub(1)).max(0)];
+        let nxt_seat =seats[(i+1).min(input.len()-1)];
+        if !cur_seat && nxt_seat && prv_seat {
+            println!("Your seat: {}", i);
+            break;
+        }
+    }
     Ok(())
 }

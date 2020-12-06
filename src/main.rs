@@ -465,7 +465,7 @@ fn aoc6_1_2() -> Result<()> {
         if line == "" {
             group.insert('_', group_size);
             group_size = 0; 
-            println!("{:?}", group);
+            //println!("{:?}", group);
             groups.push(group);
             group = HashMap::new();
         } else {
@@ -481,18 +481,23 @@ fn aoc6_1_2() -> Result<()> {
             }
         }
     }
+    let mut key_count = 0;
+    for group in groups.iter() {
+        key_count += group.keys().len() - 1;
+    }  
+    println!("Question types answererd: {}", key_count);
     let mut sum_count = 0; 
     for group in groups {
         let group_size = *group.get(&'_').unwrap();
         let answers: Vec<(&char, &u16)> = group.iter().filter(|(ch, c)| **c >= group_size && **ch != '_').collect();
         let mut sum_group= 0; 
-        for answer in answers {
-            println!("answers: {} -> {}", answer.0, answer.1);
+        for _ in answers {
+            //println!("answers: {} -> {}", answer.0, answer.1);
             sum_group += 1;
         }
-        println!("Sum: {}", sum_group);
+        //println!("Sum: {}", sum_group);
         sum_count += sum_group;
     }
-    println!("Total questions answered: {}", sum_count);
+    println!("Unique questions answered: {}", sum_count);
     Ok(())
 }

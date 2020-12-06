@@ -1,4 +1,6 @@
 
+use std::collections::HashMap;
+
 use snafu::{ResultExt, Snafu};
 
 #[derive(Debug, Snafu)]
@@ -41,6 +43,9 @@ fn main() -> Result<()> {
 
     prologue("AOC5");
     aoc5_1_2()?;
+
+    prologue("AOC6");
+    aoc6_1_2()?;
 
     epilogue();
     Ok(())
@@ -442,11 +447,52 @@ fn aoc5_1_2() -> Result<()> {
     for i in 0..input.len() {
         let cur_seat = seats[i];
         let prv_seat = seats[(i.saturating_sub(1)).max(0)];
-        let nxt_seat =seats[(i+1).min(input.len()-1)];
+        let nxt_seat = seats[(i+1).min(input.len()-1)];
         if !cur_seat && nxt_seat && prv_seat {
             println!("Your seat: {}", i);
             break;
         }
     }
+    Ok(())
+}
+
+fn aoc6_1_2() -> Result<()> {
+    let input = read_file_lines("./aoc_6_1.txt")?;
+    let mut groups : Vec<HashMap<char, u16>> = Vec::new();
+    let mut group: HashMap<char, u16> = HashMap::new();
+    let mut group_size = 0;
+    for line in input {
+        if line == "" {
+            group.insert('_', group_size);
+            group_size = 0; 
+            println!("{:?}", group);
+            groups.push(group);
+            group = HashMap::new();
+        } else {
+            group_size += 1;
+            for ch in line.chars() {
+                if group.contains_key(&ch) {
+                    group.entry(ch).and_modify(|x| {
+                        *x += 1;
+                    });
+                } else {
+                    group.insert(ch, 1);
+                }
+            }
+        }
+    }
+    let mut sum_count = 0; 
+    for group in groups {
+        let group_size = *group.get(&'_').unwrap();
+        let answers: Vec<(&char, &u16)> = group.iter().filter(|(ch, c)| **c >= group_size && **ch != '_').collect();
+        let mut sum_group= 0; 
+        for answer in answers {
+            println!("answers: {} -> {}", answer.0, answer.1);
+            sum_group += 1;
+        }
+        println!("Sum: {}", sum_group);
+        sum_count += sum_group;
+    }
+    println!("Total questions answered: {}", sum_count);
     Ok(())
 }

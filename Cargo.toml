@@ -9,3 +9,8 @@ edition = "2018"
 [dependencies]
 snafu = "0.6.9"
 regex = "1.4.2"
+
+[features]
+default = ["aoc2021"]
+aoc2020 = []
+aoc2021 = []

@@ -45,6 +45,32 @@ pub fn read_file_lines(filename: &str) -> Result<Vec<String>> {
     Ok(data)
 }
 
+pub fn read_file_lines_nenl(filename: &str) -> Result<Vec<String>> {
+    read_file_lines(filename).and_then(|mut x| {
+        assert_eq!("", x[x.len()-1]);
+        x.pop();
+        Ok(x)
+    })
+}
+
+#[macro_export]
+macro_rules! time_func {
+    ($c:tt) => {
+        let start = std::time::Instant::now();
+        let r = {
+            $c
+        };
+        let end = std::time::Instant::now();
+        let dur = end.duration_since(start);
+        let dur = chrono::Duration::from_std(dur).unwrap();
+        println!("-- Time taken: {:03}µs -- ", dur.num_microseconds().unwrap());
+        r
+    };
+    ($c:expr) => {
+        time_func!({$c})
+    }
+}
+
 pub fn main() -> Result<()> {
     #[cfg(feature = "aoc2020")]
     aoc2020::main()?;

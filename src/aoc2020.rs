@@ -71,14 +71,6 @@ fn vess_puzzle() {
     assert_eq!(sol2, ans2);
 }
 
-fn read_file_lines_nenl(filename: &str) -> Result<Vec<String>> {
-    read_file_lines(filename).and_then(|mut x| {
-        assert_eq!("", x[x.len()-1]);
-        x.pop();
-        Ok(x)
-    })
-}
-
 fn aoc1_1() -> Result<()> {
     let input = read_file_lines("./aoc2020/aoc_1_1.txt")?;
     let input: Vec<i32> = input.iter().map(|x| x.parse::<i32>().unwrap()).collect();

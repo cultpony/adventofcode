@@ -9,8 +9,14 @@ edition = "2018"
 [dependencies]
 snafu = "0.6.9"
 regex = "1.4.2"
+chrono = "0.4.19"
 
 [features]
 default = ["aoc2021"]
 aoc2020 = []
 aoc2021 = []
+
+[profile.release]
+opt-level = 3
+debug = false
+rpath = false

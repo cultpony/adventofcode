@@ -73,7 +73,7 @@ fn aoc4_1() -> Result<()> {
                 [(0, false), (0, false), (0, false), (0, false), (0, false)],
             ];
             for (i, n) in r.into_iter().enumerate() {
-                for (j, m) in n.into_iter().enumerate() {
+                for (j, m) in n.iter().enumerate() {
                     r2[i][j] = *m;
                 }
             }

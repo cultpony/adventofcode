@@ -1,4 +1,3 @@
-use std::convert::TryInto;
 use std::str::FromStr;
 
 use bit_vec::BitVec;
@@ -35,7 +34,22 @@ fn aoc4_1() -> Result<()> {
 
     impl Board {
         fn winner(&self) -> bool {
-            self.nums.iter().all(|x| x.iter().all(|y| y.1))
+            for i in self.nums {
+                if i.iter().all(|x| x.1) {
+                    return true;
+                }
+            }
+            for i in 0..self.nums.len() {
+                if self.nums[0][i].1
+                    && self.nums[1][i].1
+                    && self.nums[2][i].1
+                    && self.nums[3][i].1
+                    && self.nums[4][i].1
+                {
+                    return true;
+                }
+            }
+            return false;
         }
         fn mark(&mut self, n: u8) {
             self.nums.iter_mut().for_each(|x| {
@@ -45,6 +59,22 @@ fn aoc4_1() -> Result<()> {
                     }
                 })
             })
+        }
+        fn reset(&mut self) {
+            self.nums
+                .iter_mut()
+                .for_each(|x| x.iter_mut().for_each(|f| (*f).1 = false))
+        }
+        fn sum(&self) -> u32 {
+            let mut o = 0;
+            for j in self.nums {
+                for k in j {
+                    if !k.1 {
+                        o += k.0 as u32
+                    }
+                }
+            }
+            o
         }
     }
 
@@ -60,7 +90,10 @@ fn aoc4_1() -> Result<()> {
                     let mut q = [(0u8, false); 5];
                     for (i, f) in x.enumerate() {
                         assert!(i < 5);
-                        q[i] = (f.parse().expect(&format!("error in space: {}:{}", i, f)), false);
+                        q[i] = (
+                            f.parse().expect(&format!("error in space: {}:{}", i, f)),
+                            false,
+                        );
                     }
                     q
                 })
@@ -72,6 +105,7 @@ fn aoc4_1() -> Result<()> {
                 [(0, false), (0, false), (0, false), (0, false), (0, false)],
                 [(0, false), (0, false), (0, false), (0, false), (0, false)],
             ];
+            //println!("Converting board vec->arr");
             for (i, n) in r.into_iter().enumerate() {
                 for (j, m) in n.iter().enumerate() {
                     r2[i][j] = *m;
@@ -96,31 +130,19 @@ fn aoc4_1() -> Result<()> {
                         (13, false),
                         (17, false),
                         (11, false),
-                        (00, false)
+                        (0, false)
                     ],
-                    [
-                        (08, false),
-                        (02, false),
-                        (23, false),
-                        (04, false),
-                        (24, false)
-                    ],
+                    [(8, false), (2, false), (23, false), (4, false), (24, false)],
                     [
                         (21, false),
-                        (09, false),
+                        (9, false),
                         (14, false),
                         (16, false),
-                        (07, false)
+                        (7, false)
                     ],
+                    [(6, false), (10, false), (3, false), (18, false), (5, false)],
                     [
-                        (06, false),
-                        (10, false),
-                        (03, false),
-                        (18, false),
-                        (05, false)
-                    ],
-                    [
-                        (01, false),
+                        (1, false),
                         (12, false),
                         (20, false),
                         (15, false),
@@ -140,7 +162,8 @@ fn aoc4_1() -> Result<()> {
     }
     println!("Passed selftest");
 
-    let nums: Vec<u8> = input.remove(0)
+    let nums: Vec<u8> = input
+        .remove(0)
         .split(",")
         .filter(|x| !x.is_empty())
         .map(|x| x.parse().expect(&format!("error at: {}", x)))
@@ -148,20 +171,69 @@ fn aoc4_1() -> Result<()> {
 
     let mut boards = Vec::new();
     while input.len() > 0 {
-        let inp: Vec<&str> = input.iter().take_while(|x| !x.is_empty()).map(|x| x.as_ref()).collect();
+        let inp: Vec<&str> = input
+            .iter()
+            .take_while(|x| !x.is_empty())
+            .map(|x| x.as_ref())
+            .collect();
+        let inps = inp.len();
         let inp = inp.join("\n");
-        boards.push(inp.parse::<Board>().expect(&format!("parsing board {} failed", inp)));
+        if inp.is_empty() {
+            input.remove(0);
+            continue;
+        } else {
+            for _ in 0..inps {
+                input.remove(0);
+            }
+        }
+        //println!("Parsing board {:?}", inp);
+        boards.push(
+            inp.parse::<Board>()
+                .expect(&format!("parsing board {} failed", inp)),
+        );
     }
 
-    for num in nums {
+    println!("Running Bingo");
+    let mut last_num = 0;
+    for num in nums.clone() {
+        last_num = num;
+        //println!("Num: {}", num);
         boards.iter_mut().for_each(|b| b.mark(num));
         if boards.iter().any(|x| x.winner()) {
             break;
         }
     }
-    println!("Found winner");
+    let winner = boards.iter().find(|x| x.winner()).unwrap();
+    println!("Found winner: {:?}", winner);
+    println!("Score: {}", winner.sum() * last_num as u32);
 
-    todo!();
+    boards.iter_mut().for_each(|x| x.reset());
+    println!("Running Bad Bingo");
+    let mut last_num = 0;
+    let mut losing_board = None;
+    for num in nums {
+        last_num = num;
+        //println!("Num: {}", num);
+        {
+            boards.iter_mut().for_each(|b| b.mark(num));
+            if losing_board.is_some() {
+                losing_board
+                    .iter_mut()
+                    .for_each(|x: &mut Board| x.mark(num));
+            }
+        }
+        if boards.iter().filter(|x| !x.winner()).count() == 1 && losing_board.is_none() {
+            losing_board = Some(boards.iter().find(|x| !x.winner()).unwrap().clone());
+            println!("Last board determined, waiting for win: {:?}", losing_board);
+        }
+        if boards.iter().all(|x| x.winner()) {
+            break;
+        }
+    }
+    let losing_board = losing_board.unwrap();
+    println!("Found looser: {:?}", losing_board);
+    println!("Score: {}", losing_board.sum() * last_num as u32);
+    Ok(())
 }
 
 fn aoc3_1() -> Result<()> {

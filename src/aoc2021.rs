@@ -38,6 +38,7 @@ fn aoc6_1() -> Result<()> {
 
     type FishBucketType = usize;
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    #[repr(C)]
     struct FishBucket {
         day0: FishBucketType,
         day1: FishBucketType,

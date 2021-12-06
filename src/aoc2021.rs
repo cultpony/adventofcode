@@ -36,7 +36,7 @@ pub fn main() -> Result<()> {
 fn aoc6_1() -> Result<()> {
     let input = read_file_lines_nenl("./aoc2021/aoc_6_1.txt")?;
 
-    type FishBucketType = u64;
+    type FishBucketType = usize;
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     struct FishBucket {
         day0: FishBucketType,

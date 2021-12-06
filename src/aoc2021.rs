@@ -74,19 +74,8 @@ fn aoc6_1() -> Result<()> {
                 pad: 0,
             }
         }
-        fn step(&mut self) {
-            let d0 = self.day0;
-            self.day0 = self.day1;
-            self.day1 = self.day2;
-            self.day2 = self.day3;
-            self.day3 = self.day4;
-            self.day4 = self.day5;
-            self.day5 = self.day6;
-            self.day6 = self.day7 + d0;
-            self.day7 = self.day8;
-            self.day8 = d0;
-        }
 
+        #[inline(always)]
         fn fast_step(&mut self) {
             const SHIFT: usize = std::mem::size_of::<FishBucketType>();
             let p = (self as *mut Self as usize + SHIFT) as *mut Self;
@@ -127,15 +116,15 @@ fn aoc6_1() -> Result<()> {
     let mut oceanl = ocean_base.clone();
     let start = std::time::Instant::now();
 
-    //debug!("Running through fish futures");
+    debug!("Running through fish futures");
     for i in 0..80 {
-        //debug!("Day {}: {} fish", i, ocean.total());
+        debug!("Day {}: {} fish", i, ocean.total());
         ocean.fast_step();
     }
 
-    //debug!("Running through fish futures extended edition");
+    debug!("Running through fish futures extended edition");
     for i in 0..256 {
-        //debug!("Day {}: {} fish", i, ocean.total());
+        debug!("Day {}: {} fish", i, ocean.total());
         oceanl.fast_step();
     }
 

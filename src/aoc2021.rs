@@ -167,6 +167,7 @@ fn aoc6_1() -> Result<()> {
         ocean.step();
     }
     println!("Got fish futures: {} fish cnt", ocean.total());
+    Ok(())
 }
 
 fn aoc5_1() -> Result<()> {

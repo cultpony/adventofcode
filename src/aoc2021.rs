@@ -36,29 +36,30 @@ pub fn main() -> Result<()> {
 fn aoc6_1() -> Result<()> {
     let input = read_file_lines_nenl("./aoc2021/aoc_6_1.txt")?;
 
+    type FishBucketType = u64;
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     struct FishBucket {
-        day0: u128,
-        day1: u128,
-        day2: u128,
-        day3: u128,
-        day4: u128,
-        day5: u128,
-        day6: u128,
-        day7: u128,
-        day8: u128,
+        day0: FishBucketType,
+        day1: FishBucketType,
+        day2: FishBucketType,
+        day3: FishBucketType,
+        day4: FishBucketType,
+        day5: FishBucketType,
+        day6: FishBucketType,
+        day7: FishBucketType,
+        day8: FishBucketType,
     }
 
     impl FishBucket {
         fn new(day0: usize, day1: usize, day2: usize, day3: usize, day4: usize, day5: usize, day6: usize) -> Self {
             Self {
-                day0: day0 as u128,
-                day1: day1 as u128,
-                day2: day2 as u128,
-                day3: day3 as u128,
-                day4: day4 as u128,
-                day5: day5 as u128,
-                day6: day6 as u128,
+                day0: day0 as FishBucketType,
+                day1: day1 as FishBucketType,
+                day2: day2 as FishBucketType,
+                day3: day3 as FishBucketType,
+                day4: day4 as FishBucketType,
+                day5: day5 as FishBucketType,
+                day6: day6 as FishBucketType,
                 day7: 0,
                 day8: 0,
             }
@@ -75,7 +76,7 @@ fn aoc6_1() -> Result<()> {
             self.day7 = self.day8;
             self.day8 = d0;
         }
-        fn total(&self) -> u128 {
+        fn total(&self) -> FishBucketType {
             self.day0 + self.day1 + self.day2 + self.day3 + self.day4 + self.day5 + self.day6 + self.day7 + self.day8
         }
     }
@@ -147,23 +148,23 @@ fn aoc6_1() -> Result<()> {
     let mut fish_future = fish.clone();
     let mut ocean = ocean_base.clone();
     for i in 0..80 {
-        let mut new_fish = Vec::new();
+        /*let mut new_fish = Vec::new();
         for fish in fish_future.iter_mut() {
             match fish.step() {
                 Some(n) => new_fish.push(n),
                 None => (),
             }
         }
-        fish_future.append(&mut new_fish);
+        fish_future.append(&mut new_fish);*/
         ocean.step();
     }
-    assert_eq!(fish_future.len() as u128, ocean.total());
+    //assert_eq!(fish_future.len() as u128, ocean.total());
     println!("Got fish futures: {} fish cnt", fish_future.len());
     
     debug!("Running through fish futures extended edition");
     let mut ocean = ocean_base.clone();
     for i in 0..256 {
-        println!("Day {}: {} fish", i, ocean.total());
+        //println!("Day {}: {} fish", i, ocean.total());
         ocean.step();
     }
     println!("Got fish futures: {} fish cnt", ocean.total());

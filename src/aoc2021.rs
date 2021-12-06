@@ -1,4 +1,7 @@
+use std::convert::TryInto;
+use std::ops::Add;
 use std::str::FromStr;
+use log::{warn,info,debug,trace};
 
 use bit_vec::BitVec;
 
@@ -19,7 +22,369 @@ pub fn main() -> Result<()> {
     prologue("AOC4");
     time_func!(aoc4_1()?);
 
+    prologue("AOC5");
+    time_func!(aoc5_1()?);
+
     epilogue();
+
+    Ok(())
+}
+
+fn aoc5_1() -> Result<()> {
+    let input = read_file_lines_nenl("./aoc2021/aoc_5_1.txt")?;
+
+    #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+    struct Point {
+        x: usize,
+        y: usize,
+    }
+
+    #[derive(Debug, PartialEq, Eq, Clone, Copy)]
+    enum Line {
+        Vertical { start: Point, end: Point },
+        Horizontal { start: Point, end: Point },
+        Angled { start: Point, end: Point },
+    }
+
+    impl FromStr for Point {
+        type Err = AppError;
+        fn from_str(s: &str) -> Result<Self, Self::Err> {
+            let (left, right) = s.split_once(',').unwrap();
+            let left = left.parse().expect(&format!("{} is not a digit", left));
+            let right = right.parse().expect(&format!("{} is not a digit", right));
+            Ok(Self { x: left, y: right })
+        }
+    }
+
+    impl FromStr for Line {
+        type Err = AppError;
+        fn from_str(s: &str) -> Result<Self, Self::Err> {
+            let (start, end) = s.split_once(" -> ").unwrap();
+            let start: Point = start.parse()?;
+            let end: Point = end.parse()?;
+            if start.x == end.x {
+                let (start, end) = {
+                    if start.y > end.y {
+                        trace!("Had to swap horiz line");
+                        (end, start)
+                    } else {
+                        trace!("Got plain line");
+                        (start, end)
+                    }
+                };
+                Ok(Line::Horizontal { start, end })
+            } else if start.y == end.y {
+                let (start, end) = {
+                    if start.x > end.x {
+                        trace!("Had to swap vertic line");
+                        (end, start)
+                    } else {
+                        trace!("Got plain line");
+                        (start, end)
+                    }
+                };
+                Ok(Line::Vertical { start, end })
+            } else {
+                let (start, end) = {
+                    if start.x > end.x {
+                        if start.y > end.y {
+                            (start, end)
+                        } else {
+                            (end, start)
+                        }
+                    } else {
+                        if start.y < end.y {
+                            (start, end)
+                        } else {
+                            (end, start)
+                        }
+                    }
+                };
+                Ok(Line::Angled { start, end })
+            }
+        }
+    }
+
+    impl Line {
+        fn is_horizontal_or_vertical(&self) -> bool {
+            match self {
+                Self::Vertical { .. } => true,
+                Self::Horizontal { .. } => true,
+                _ => false,
+            }
+        }
+        fn start(&self) -> &Point {
+            match self {
+                Self::Vertical { start, .. } => start,
+                Self::Horizontal { start, .. } => start,
+                Self::Angled { start, .. } => start,
+            }
+        }
+        fn end(&self) -> &Point {
+            match self {
+                Self::Vertical { end, .. } => end,
+                Self::Horizontal { end, .. } => end,
+                Self::Angled { end, .. } => end,
+            }
+        }
+    }
+
+    struct PlayingField<
+        T: Eq + Ord + Clone + Copy + Default + std::fmt::Debug + Add<u8, Output = T>,
+        const N: usize,
+        const M: usize,
+    > {
+        f: Box<[Box<[T; N]>; M]>,
+    }
+
+    impl<
+            T: Eq + Ord + Clone + Copy + Default + std::fmt::Debug + Add<u8, Output = T>,
+            const N: usize,
+            const M: usize,
+        > PlayingField<T, N, M>
+    {
+        fn new() -> Self {
+            let mut v = Vec::new();
+            for i in 0..N {
+                v.push(T::default());
+            }
+            let r: [T; N] = v.try_into().unwrap();
+            let mut v = Vec::new();
+            for i in 0..M {
+                v.push(Box::new(r.clone()));
+            }
+            let r: [Box<[T; N]>; M] = v.try_into().unwrap();
+            Self { f: Box::new(r) }
+        }
+        fn get(&self, x: usize, y: usize) -> T {
+            assert!(y < N);
+            assert!(x < M);
+            self.f[y][x]
+        }
+        fn swap(&mut self, x: usize, y: usize, d: T) -> T {
+            assert!(y < N);
+            assert!(x < M);
+            let v = self.f[y][x];
+            self.f[y][x] = d;
+            v
+        }
+        fn apply<R: FnMut(T) -> T>(&mut self, x: usize, y: usize, mut d: R) -> (T, T) {
+            assert!(y < N);
+            assert!(x < M);
+            let v = self.f[y][x];
+            let nv = d(v);
+            self.f[y][x] = nv;
+            (v, nv)
+        }
+        fn fold<Q, R: FnMut(Q, Q) -> Q>(&self, start: Q, mut d: R) -> Q
+        where
+            T: Into<Q>,
+        {
+            let mut acc = start;
+            for i in 0..N {
+                for j in 0..M {
+                    acc = d(acc, self.get(i, j).into())
+                }
+            }
+            acc
+        }
+        fn print(&self) {
+            for j in 0..M {
+                for i in 0..N {
+                    let v = self.get(i, j);
+                    if v == T::default() {
+                        print!(".");
+                    } else {
+                        print!("{:?}", v);
+                    }
+                }
+                println!("");
+            }
+        }
+        fn reset(&mut self) {
+            for j in 0..M {
+                for i in 0..N {
+                    self.swap(i, j, T::default());
+                }
+            }
+        }
+        fn apply_lines(&mut self, l: &Vec<Line>) {
+            for line in l {
+                match line {
+                    Line::Angled { start, end } => {
+                        trace!("Applying dline: {:?}, {:?}", start, end);
+                        if start.x > end.x {
+                            if start.y > end.y {
+                                trace!("L1");
+                                trace!("Moving X from {} - {}", start.x, end.x);
+                                trace!("Moving Y from {} - {}", start.y, end.y);
+                                for i in 0..=(start.x - end.x) {
+                                    trace!("Applying to {:?}+{}x{:?}+{}", start.x,i, start.y, i);
+                                    self.apply(start.x - i, start.y - i, |n| n.add(1));
+                                }
+                            } else {
+                                trace!("L2");
+                                trace!("Moving x from {} - {}", start.x, end.x);
+                                trace!("Moving Y from {} - {}", end.y, start.y);
+                                for i in 0..=(start.x - end.x) {
+                                    trace!("Applying to {:?}-{}x{:?}+{}", start.x,i, start.y, i);
+                                    self.apply(start.x - i, start.y + i, |n| n.add(1));
+                                }
+                            }
+                        } else {
+                            if start.y > end.y {
+                                trace!("L3");
+                                trace!("Moving X from {} - {}", end.x, start.x);
+                                trace!("Moving Y from {} - {}", start.y, end.y);
+                                for i in 0..=(end.x - start.x) {
+                                    trace!("Applying to {:?}+{}x{:?}-{}", start.x,i, start.y, i);
+                                    self.apply(start.x + i, start.y - i, |n| n.add(1));
+                                }
+                            } else {
+                                trace!("L4");
+                                trace!("Moving X from {} - {}", end.x, start.x);
+                                trace!("Moving Y from {} - {}", end.y, start.y);
+                                for i in 0..=(end.x - start.x) {
+                                    trace!("Applying to {:?}-{}x{:?}-{}", start.x,i, start.y, i);
+                                    self.apply(start.x + i, start.y + i, |n| n.add(1));
+                                }
+                            }
+                        }
+                    }
+                    Line::Horizontal { start, end } => {
+                        trace!("Applying hline: {:?}, {:?}", start, end);
+                        for i in 0..=(end.y - start.y) {
+                            self.apply(start.x, start.y + i, |n| n.add(1));
+                        }
+                    }
+                    Line::Vertical { start, end } => {
+                        trace!("Applying vline: {:?}, {:?}", start, end);
+                        for i in 0..=(end.x - start.x) {
+                            self.apply(start.x + i, start.y, |n| n.add(1));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    let input: Vec<Line> = input
+        .iter()
+        .map(|x| {
+            x.parse::<Line>()
+                .expect(&format!("could not parse as line: {}", x))
+        })
+        .collect();
+
+    let hvlines: Vec<Line> = input
+        .iter()
+        .filter(|x| x.is_horizontal_or_vertical())
+        .copied()
+        .collect();
+
+    println!("Got {} lines either H or V", hvlines.len());
+
+    let max_x = hvlines
+        .iter()
+        .map(|l: &Line| l.start().x.max(l.end().x))
+        .max()
+        .unwrap() as usize;
+    let max_y = hvlines
+        .iter()
+        .map(|l: &Line| l.start().y.max(l.end().y))
+        .max()
+        .unwrap() as usize;
+
+    assert!(max_x < 1000);
+    assert!(max_y < 1000);
+
+    println!("Playing field: {}x{}", max_x, max_y);
+
+    let mut playing_field = PlayingField::<u8, 1000, 1000>::new();
+    assert_eq!(0, playing_field.get(max_x, max_y));
+    assert_eq!(0, playing_field.get(0, max_y));
+    assert_eq!(0, playing_field.get(max_x, 0));
+    assert_eq!(0, playing_field.get(0, 0));
+
+    println!("PF Self Test Complete");
+
+    {
+        let input: Vec<&str> = r#"0,9 -> 5,9
+        8,0 -> 0,8
+        9,4 -> 3,4
+        2,2 -> 2,1
+        7,0 -> 7,4
+        6,4 -> 2,0
+        0,9 -> 2,9
+        3,4 -> 1,4
+        0,0 -> 8,8
+        5,5 -> 8,2
+        1,1 -> 3,3
+        9,7 -> 7,9"#
+            .split('\n')
+            .map(|x| x.trim())
+            .collect();
+        let mut pf = PlayingField::<u8, 10, 10>::new();
+        let input: Vec<Line> = input
+            .iter()
+            .map(|x| {
+                x.parse::<Line>()
+                    .expect(&format!("could not parse as line: {}", x))
+            })
+            .collect();
+        let hvlines: Vec<Line> = input
+            .iter()
+            .filter(|x| x.is_horizontal_or_vertical())
+            .copied()
+            .collect();
+
+        pf.print();
+
+        println!("Applying test lines");
+
+        pf.apply_lines(&hvlines);
+
+        println!("Applied test lines");
+
+        pf.print();
+        pf.reset();
+
+        println!("Applying diagonal lines");
+
+        pf.apply_lines(&input);
+
+        println!("Applied test lines");
+
+        pf.print();
+    }
+
+    println!("PF Example Test Complete");
+
+    playing_field.apply_lines(&hvlines);
+
+    println!("Completed HV run, counting overlaps");
+
+    let overlaps: usize = playing_field.fold(0usize, |mut acc: usize, v: usize| {
+        if v >= 2 {
+            acc += 1;
+        }
+        acc
+    });
+
+    println!("Overlaps: {}", overlaps);
+
+    playing_field.reset();
+
+    playing_field.apply_lines(&input);
+
+    let overlaps: usize = playing_field.fold(0usize, |mut acc: usize, v: usize| {
+        if v >= 2 {
+            acc += 1;
+        }
+        acc
+    });
+
+    println!("Overlaps: {}", overlaps);
 
     Ok(())
 }

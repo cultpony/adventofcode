@@ -72,6 +72,8 @@ macro_rules! time_func {
 }
 
 pub fn main() -> Result<()> {
+    env_logger::init();
+
     #[cfg(feature = "aoc2020")]
     aoc2020::main()?;
     #[cfg(feature = "aoc2021")]

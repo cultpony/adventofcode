@@ -1,7 +1,7 @@
-use std::convert::TryInto;
+use log::{debug, info, trace, warn};
 use std::ops::Add;
 use std::str::FromStr;
-use log::{warn,info,debug,trace};
+use std::{convert::TryInto, hint::unreachable_unchecked};
 
 use bit_vec::BitVec;
 
@@ -48,10 +48,19 @@ fn aoc6_1() -> Result<()> {
         day6: FishBucketType,
         day7: FishBucketType,
         day8: FishBucketType,
+        pad: FishBucketType,
     }
 
     impl FishBucket {
-        fn new(day0: usize, day1: usize, day2: usize, day3: usize, day4: usize, day5: usize, day6: usize) -> Self {
+        fn new(
+            day0: usize,
+            day1: usize,
+            day2: usize,
+            day3: usize,
+            day4: usize,
+            day5: usize,
+            day6: usize,
+        ) -> Self {
             Self {
                 day0: day0 as FishBucketType,
                 day1: day1 as FishBucketType,
@@ -62,6 +71,7 @@ fn aoc6_1() -> Result<()> {
                 day6: day6 as FishBucketType,
                 day7: 0,
                 day8: 0,
+                pad: 0,
             }
         }
         fn step(&mut self) {
@@ -76,98 +86,67 @@ fn aoc6_1() -> Result<()> {
             self.day7 = self.day8;
             self.day8 = d0;
         }
+
+        fn fast_step(&mut self) {
+            const SHIFT: usize = std::mem::size_of::<FishBucketType>();
+            let p = (self as *mut Self as usize + SHIFT) as *mut Self;
+            let p: &mut Self = unsafe { &mut *p };
+            p.day8 = self.day0;
+            p.day6 += self.day0;
+            *self = *p
+        }
+
         fn total(&self) -> FishBucketType {
-            self.day0 + self.day1 + self.day2 + self.day3 + self.day4 + self.day5 + self.day6 + self.day7 + self.day8
-        }
-    }
-
-    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-    enum Fish {
-        Day0,
-        Day1,
-        Day2,
-        Day3,
-        Day4,
-        Day5,
-        Day6,
-        Day7,
-        Day8
-    }
-
-    impl Fish {
-        fn step(&mut self) -> Option<Fish> {
-            use Fish::*;
-            match self {
-                Day0 => { *self = Day6; return Some(Fish::Day8) }
-                Day1 => *self = Day0,
-                Day2 => *self = Day1,
-                Day3 => *self = Day2,
-                Day4 => *self = Day3,
-                Day5 => *self = Day4,
-                Day6 => *self = Day5,
-                Day7 => *self = Day6,
-                Day8 => *self = Day7,
-            }
-            None
-        }
-    }
-
-    impl FromStr for Fish {
-        type Err = AppError;
-
-        fn from_str(s: &str) -> Result<Self, Self::Err> {
-            use Fish::*;
-            Ok(match s.parse::<u8>().unwrap() {
-                0 => Day0,
-                1 => Day1,
-                2 => Day2,
-                3 => Day3,
-                4 => Day4,
-                5 => Day5,
-                6 => Day6,
-                _ => unreachable!(),
-            })
+            self.day0
+                + self.day1
+                + self.day2
+                + self.day3
+                + self.day4
+                + self.day5
+                + self.day6
+                + self.day7
+                + self.day8
         }
     }
 
     let inp: Vec<&str> = input[0].split(',').collect();
-    let day0 = inp.iter().filter(|x| **x == "0").count();
-    let day1 = inp.iter().filter(|x| **x == "1").count();
-    let day2 = inp.iter().filter(|x| **x == "2").count();
-    let day3 = inp.iter().filter(|x| **x == "3").count();
-    let day4 = inp.iter().filter(|x| **x == "4").count();
-    let day5 = inp.iter().filter(|x| **x == "5").count();
-    let day6 = inp.iter().filter(|x| **x == "6").count();
-    let mut ocean_base = FishBucket::new(day0, day1, day2, day3, day4, day5, day6);
+    let (day0, day1, day2, day3, day4, day5, day6) =
+        inp.iter().fold((0, 0, 0, 0, 0, 0, 0), |acc, x| match *x {
+            "0" => (acc.0 + 1, acc.1, acc.2, acc.3, acc.4, acc.5, acc.6),
+            "1" => (acc.0, acc.1 + 1, acc.2, acc.3, acc.4, acc.5, acc.6),
+            "2" => (acc.0, acc.1, acc.2 + 1, acc.3, acc.4, acc.5, acc.6),
+            "3" => (acc.0, acc.1, acc.2, acc.3 + 1, acc.4, acc.5, acc.6),
+            "4" => (acc.0, acc.1, acc.2, acc.3, acc.4 + 1, acc.5, acc.6),
+            "5" => (acc.0, acc.1, acc.2, acc.3, acc.4, acc.5 + 1, acc.6),
+            "6" => (acc.0, acc.1, acc.2, acc.3, acc.4, acc.5, acc.6 + 1),
+            _ => unsafe{unreachable_unchecked()},
+        });
+    let ocean_base = FishBucket::new(day0, day1, day2, day3, day4, day5, day6);
 
-    let fish: Vec<Fish> = input[0].split(',')
-        .map(|x| x.parse::<Fish>().unwrap())
-        .collect();
-
-    debug!("Running through fish futures");
-    let mut fish_future = fish.clone();
     let mut ocean = ocean_base.clone();
+    let mut oceanl = ocean_base.clone();
+    let start = std::time::Instant::now();
+
+    //debug!("Running through fish futures");
     for i in 0..80 {
-        /*let mut new_fish = Vec::new();
-        for fish in fish_future.iter_mut() {
-            match fish.step() {
-                Some(n) => new_fish.push(n),
-                None => (),
-            }
-        }
-        fish_future.append(&mut new_fish);*/
-        ocean.step();
+        //debug!("Day {}: {} fish", i, ocean.total());
+        ocean.fast_step();
     }
-    //assert_eq!(fish_future.len() as u128, ocean.total());
-    println!("Got fish futures: {} fish cnt", fish_future.len());
-    
-    debug!("Running through fish futures extended edition");
-    let mut ocean = ocean_base.clone();
+
+    //debug!("Running through fish futures extended edition");
     for i in 0..256 {
-        //println!("Day {}: {} fish", i, ocean.total());
-        ocean.step();
+        //debug!("Day {}: {} fish", i, ocean.total());
+        oceanl.fast_step();
     }
+
+    let end = std::time::Instant::now();
     println!("Got fish futures: {} fish cnt", ocean.total());
+    println!("Got fish futures: {} fish cnt", oceanl.total());
+
+    let dur = end.checked_duration_since(start).unwrap();
+
+    println!("Took {}µs ({}ns)", dur.as_micros(), dur.as_nanos());
+
     Ok(())
 }
 
@@ -360,7 +339,7 @@ fn aoc5_1() -> Result<()> {
                                 trace!("Moving X from {} - {}", start.x, end.x);
                                 trace!("Moving Y from {} - {}", start.y, end.y);
                                 for i in 0..=(start.x - end.x) {
-                                    trace!("Applying to {:?}+{}x{:?}+{}", start.x,i, start.y, i);
+                                    trace!("Applying to {:?}+{}x{:?}+{}", start.x, i, start.y, i);
                                     self.apply(start.x - i, start.y - i, |n| n.add(1));
                                 }
                             } else {
@@ -368,7 +347,7 @@ fn aoc5_1() -> Result<()> {
                                 trace!("Moving x from {} - {}", start.x, end.x);
                                 trace!("Moving Y from {} - {}", end.y, start.y);
                                 for i in 0..=(start.x - end.x) {
-                                    trace!("Applying to {:?}-{}x{:?}+{}", start.x,i, start.y, i);
+                                    trace!("Applying to {:?}-{}x{:?}+{}", start.x, i, start.y, i);
                                     self.apply(start.x - i, start.y + i, |n| n.add(1));
                                 }
                             }
@@ -378,7 +357,7 @@ fn aoc5_1() -> Result<()> {
                                 trace!("Moving X from {} - {}", end.x, start.x);
                                 trace!("Moving Y from {} - {}", start.y, end.y);
                                 for i in 0..=(end.x - start.x) {
-                                    trace!("Applying to {:?}+{}x{:?}-{}", start.x,i, start.y, i);
+                                    trace!("Applying to {:?}+{}x{:?}-{}", start.x, i, start.y, i);
                                     self.apply(start.x + i, start.y - i, |n| n.add(1));
                                 }
                             } else {
@@ -386,7 +365,7 @@ fn aoc5_1() -> Result<()> {
                                 trace!("Moving X from {} - {}", end.x, start.x);
                                 trace!("Moving Y from {} - {}", end.y, start.y);
                                 for i in 0..=(end.x - start.x) {
-                                    trace!("Applying to {:?}-{}x{:?}-{}", start.x,i, start.y, i);
+                                    trace!("Applying to {:?}-{}x{:?}-{}", start.x, i, start.y, i);
                                     self.apply(start.x + i, start.y + i, |n| n.add(1));
                                 }
                             }

@@ -110,7 +110,7 @@ fn aoc7_2(input: Vec<String>) -> Result<String> {
 fn aoc6_1() -> Result<()> {
     let input = read_file_lines_nenl("./aoc2021/aoc_6_1.txt")?;
 
-    type FishBucketType = usize;
+    type FishBucketType = u128;
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     #[repr(C)]
     struct FishBucket {
@@ -199,7 +199,7 @@ fn aoc6_1() -> Result<()> {
 
     debug!("Running through fish futures extended edition");
     for i in 0..256 {
-        debug!("Day {}: {} fish", i, ocean.total());
+        debug!("Day {}: {} fish", i, oceanl.total());
         oceanl.fast_step();
     }
 

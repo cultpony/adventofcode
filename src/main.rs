@@ -93,7 +93,8 @@ macro_rules! time_func_rft {
                 list[mid]
             }
         };
-        let mut trial = |file| {
+        let mut trial = |file: &[String]| {
+            let file = file.to_vec();
             let start = std::time::Instant::now();
             let r = {
                 $c(file).unwrap()
@@ -104,16 +105,17 @@ macro_rules! time_func_rft {
             durl.push(dur);
             r
         };
-        let mut r = trial(file.clone());
-        for i in 0..$tries {
-            r = trial(file.clone());
+        let mut r = trial(&file);
+        assert!($tries > 0, "Cannot do 0 tries");
+        for _ in 0..$tries {
+            r = trial(&file);
         }
         let durmax = durl.iter().max().unwrap();
         let durmin = durl.iter().min().unwrap();
         let durmean = mean(&durl);
         let durmed = median(&durl);
         println!("-- Trials: {} -- ", $tries);
-        println!("Solution: {}", r);
+        println!("{}", r);
         println!("-- Time taken (MIN): {:03}µs -- ", durmin.num_microseconds().unwrap());
         println!("-- Time taken (AVG): {:03}µs -- ", durmean.num_microseconds().unwrap());
         println!("-- Time taken (MED): {:03}µs -- ", durmed.num_microseconds().unwrap());

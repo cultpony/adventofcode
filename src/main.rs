@@ -71,6 +71,60 @@ macro_rules! time_func {
     }
 }
 
+#[macro_export]
+macro_rules! time_func_rft {
+    ($file:tt, $reader:ident, $c:ident, $tries:expr) => {
+        let file = $reader($file)?;
+        let mut durl = Vec::new();
+        let mean = |list: &[chrono::Duration]| -> chrono::Duration {
+            let sum: chrono::Duration = list.iter().fold(chrono::Duration::nanoseconds(0), |acc, r| {
+                acc + *r
+            });
+            sum / list.len() as i32
+        };
+        let median = |list: &[chrono::Duration]| -> chrono::Duration {
+            let mut list = list.to_vec();
+            list.sort();
+            let len = list.len();
+            let mid = len / 2;
+            if len % 2 == 0 {
+                mean(&list[(mid - 1)..(mid + 1)])
+            } else {
+                list[mid]
+            }
+        };
+        let mut trial = |file| {
+            let start = std::time::Instant::now();
+            let r = {
+                $c(file).unwrap()
+            };
+            let end = std::time::Instant::now();
+            let dur = end.duration_since(start);
+            let dur = chrono::Duration::from_std(dur).unwrap();
+            durl.push(dur);
+            r
+        };
+        let mut r = trial(file.clone());
+        for i in 0..$tries {
+            r = trial(file.clone());
+        }
+        let durmax = durl.iter().max().unwrap();
+        let durmin = durl.iter().min().unwrap();
+        let durmean = mean(&durl);
+        let durmed = median(&durl);
+        println!("-- Trials: {} -- ", $tries);
+        println!("Solution: {}", r);
+        println!("-- Time taken (MIN): {:03}µs -- ", durmin.num_microseconds().unwrap());
+        println!("-- Time taken (AVG): {:03}µs -- ", durmean.num_microseconds().unwrap());
+        println!("-- Time taken (MED): {:03}µs -- ", durmed.num_microseconds().unwrap());
+        println!("-- Time taken (MAX): {:03}µs -- ", durmax.num_microseconds().unwrap());
+    };
+    ($ff:expr, $c:expr) => {
+        time_func!({$ff}, read_file_lines_nenl, {$c}, 1000)
+    }
+}
+
+
 pub fn main() -> Result<()> {
     env_logger::init();
 

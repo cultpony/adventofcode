@@ -28,9 +28,83 @@ pub fn main() -> Result<()> {
     prologue("AOC6");
     time_func!(aoc6_1()?);
 
+    prologue("AOC7");
+    time_func_rft!("./aoc2021/aoc_7_1.txt", read_file_lines_nenl, aoc7_1, 1000);
+    time_func_rft!("./aoc2021/aoc_7_1.txt", read_file_lines_nenl, aoc7_2, 1000);
+
     epilogue();
 
     Ok(())
+}
+
+fn aoc7_1(input: Vec<String>) -> Result<String> {
+    let input: Vec<i64> = input[0]
+        .split(',')
+        .map(|x| x.parse().unwrap())
+        .collect();
+
+    let depth_try = |depth: i64, inp: &[i64]| -> i64 {
+        let mut fuel_spent = 0;
+        for i in inp {
+            fuel_spent += (i-depth).abs()
+        }
+        assert!(fuel_spent > 0, "Fuel spent {} at depth {}", fuel_spent, depth);
+        fuel_spent
+    };
+
+    let max = input.iter().max().unwrap();
+    let min = input.iter().min().unwrap();
+
+    let mut best_try = (0, i64::MAX);
+    for i in *min..*max {
+        let fuel_spent = depth_try(i as i64, &input);
+        if fuel_spent < best_try.1 {
+            best_try = (i, fuel_spent)
+        }
+    }
+
+    Ok(format!("Best solution: {} fuel spent at position {}", best_try.1, best_try.0))
+}
+
+fn aoc7_2(input: Vec<String>) -> Result<String> {
+    let input: Vec<i64> = input[0]
+        .split(',')
+        .map(|x| x.parse().unwrap())
+        .collect();
+
+    let depth_func = |f: i64, depth: i64| -> i64 {
+        let r = (f-depth).abs();
+        let r = (r*r+r)/2;
+        r
+    };
+
+    let max = input.iter().max().unwrap();
+    let min = input.iter().min().unwrap();
+
+    let depth_try = |depth: i64, inp: &[i64]| -> i64 {
+        let mut fuel_spent = 0;
+        for i in inp {
+            fuel_spent += depth_func(*i, depth);
+        }
+        assert!(fuel_spent > 0, "Fuel spent {} at depth {}", fuel_spent, depth);
+        fuel_spent
+    };
+
+    assert_eq!(depth_func(16, 5), 66);
+    assert_eq!(depth_func(1, 5), 10);
+    assert_eq!(depth_func(2, 5), 6);
+    assert_eq!(depth_func(0, 5), 15);
+    assert_eq!(depth_func(14, 5), 45);
+
+    let mut best_try = (0, i64::MAX);
+    for i in *min..*max {
+        let fuel_spent = depth_try(i as i64, &input);
+        if fuel_spent < best_try.1 {
+            best_try = (i, fuel_spent)
+        }
+    }
+
+    Ok(format!("Best solution: {} fuel spent at position {}", best_try.1, best_try.0))
 }
 
 fn aoc6_1() -> Result<()> {
@@ -109,7 +183,7 @@ fn aoc6_1() -> Result<()> {
             "4" => (acc.0, acc.1, acc.2, acc.3, acc.4 + 1, acc.5, acc.6),
             "5" => (acc.0, acc.1, acc.2, acc.3, acc.4, acc.5 + 1, acc.6),
             "6" => (acc.0, acc.1, acc.2, acc.3, acc.4, acc.5, acc.6 + 1),
-            _ => unsafe{unreachable_unchecked()},
+            _ => unsafe { unreachable_unchecked() },
         });
     let ocean_base = FishBucket::new(day0, day1, day2, day3, day4, day5, day6);
 

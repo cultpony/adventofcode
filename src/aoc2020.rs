@@ -3,41 +3,63 @@ use std::collections::HashMap;
 
 use crate::*;
 
+#[cfg(feature = "run_aoc2020")]
 pub fn main() -> Result<()> {
     //vess_puzzle();
 
+    #[cfg(any(feature = "aoc2020-day1-part1", feature = "aoc2020-day1-part2"))]
     prologue("AOC1");
+    #[cfg(feature = "aoc2020-day1-part1")]
     aoc1_1()?;
+    #[cfg(feature = "aoc2020-day1-part2")]
     aoc1_2()?;
     
+    #[cfg(any(feature = "aoc2020-day2-part1", feature = "aoc2020-day2-part2"))]
     prologue("AOC2");
+    #[cfg(feature = "aoc2020-day2-part1")]
     aoc2_1()?;
+    #[cfg(feature = "aoc2020-day2-part2")]
     aoc2_2()?;
 
+    #[cfg(any(feature = "aoc2020-day3-part1", feature = "aoc2020-day3-part2"))]
     prologue("AOC3");
+    #[cfg(feature = "aoc2020-day3-part1")]
     aoc3_1()?;
+    #[cfg(feature = "aoc2020-day3-part2")]
     aoc3_2()?;
 
+    #[cfg(any(feature = "aoc2020-day4-part1", feature = "aoc2020-day4-part2"))]
     prologue("AOC4");
+    #[cfg(any(feature = "aoc2020-day4-part1", feature = "aoc2020-day4-part2"))]
     aoc4_1()?;
 
+    #[cfg(any(feature = "aoc2020-day5-part1", feature = "aoc2020-day5-part2"))]
     prologue("AOC5");
+    #[cfg(any(feature = "aoc2020-day5-part1", feature = "aoc2020-day5-part2"))]
     aoc5_1_2()?;
 
+    #[cfg(any(feature = "aoc2020-day6-part1", feature = "aoc2020-day6-part2"))]
     prologue("AOC6");
+    #[cfg(any(feature = "aoc2020-day6-part1", feature = "aoc2020-day6-part2"))]
     aoc6_1_2()?;
 
+    #[cfg(any(feature = "aoc2020-day7-part1", feature = "aoc2020-day7-part2"))]
     prologue("AOC7");
+    #[cfg(any(feature = "aoc2020-day7-part1", feature = "aoc2020-day7-part2"))]
     aoc7_1_2()?;
+
+    #[cfg(feature = "vess_puzzles")]
+    prologue("VESS");
+    #[cfg(feature = "vess_puzzles")]
+    vess_puzzle();
 
     epilogue();
     Ok(())
 }
 
-
-
+#[cfg(feature = "vess_puzzles")]
 fn vess_puzzle() {
-    let start = 1075;
+    let _start = 1075;
     //let start = 1;
     let width = 200;
     //let width = 3;
@@ -60,17 +82,18 @@ fn vess_puzzle() {
                 ans2 = (ans2 + i) % 15356;
             }
         }
-        if (k+2 > cnt / 2) {
+        if k+2 > cnt / 2 {
             c_width -= 1;
         } else {
             c_width += 1;
         }
         println!("\n");
     }
-    assert_eq!(sol1, ans1);
-    assert_eq!(sol2, ans2);
+    //assert_eq!(sol1, ans1);
+    //assert_eq!(sol2, ans2);
 }
 
+#[cfg(feature = "aoc2020-day1-part1")]
 fn aoc1_1() -> Result<()> {
     let input = read_file_lines("./aoc2020/aoc_1_1.txt")?;
     let input: Vec<i32> = input.iter().map(|x| x.parse::<i32>().unwrap()).collect();
@@ -86,6 +109,7 @@ fn aoc1_1() -> Result<()> {
     Ok(())
 }
 
+#[cfg(feature = "aoc2020-day1-part2")]
 fn aoc1_2() -> Result<()> {
     let input = read_file_lines("./aoc2020/aoc_1_1.txt")?;
     let input: Vec<i32> = input.iter().map(|x| x.parse::<i32>().unwrap()).collect();
@@ -103,6 +127,7 @@ fn aoc1_2() -> Result<()> {
     Ok(())
 }
 
+#[cfg(feature = "aoc2020-day2-part1")]
 fn aoc2_1() -> Result<()> {
     let rgx = r#"^(\d+)-(\d+)\s(\w):\s(.*)$"#;
     let input = read_file_lines("./aoc2020/aoc_2_1.txt")?;
@@ -138,7 +163,7 @@ fn aoc2_1() -> Result<()> {
     Ok(())
 }
 
-
+#[cfg(feature = "aoc2020-day2-part2")]
 fn aoc2_2() -> Result<()> {
     let rgx = r#"^(\d+)-(\d+)\s(\w):\s(.*)$"#;
     let input = read_file_lines("./aoc2020/aoc_2_1.txt")?;
@@ -171,12 +196,14 @@ fn aoc2_2() -> Result<()> {
     Ok(())
 }
 
+#[cfg(feature = "aoc2020-day3-part1")]
 fn aoc3_1() -> Result<()> {
     let tree_count = aoc3_1_slope(1, 3)?;
     println!("Trees: {}", tree_count);
     Ok(())
 }
 
+#[cfg(any(feature = "aoc2020-day3-part1", feature = "aoc2020-day3-part2"))]
 fn aoc3_1_slope(xslope: usize, yslope: usize) -> Result<usize> {
     let input = read_file_lines("./aoc2020/aoc_3_1.txt")?;
     let mut ypos = 0;
@@ -196,6 +223,7 @@ fn aoc3_1_slope(xslope: usize, yslope: usize) -> Result<usize> {
    Ok(tree_count)
 }
 
+#[cfg(feature = "aoc2020-day3-part2")]
 fn aoc3_2() -> Result<()> {
     let tree_count: usize = aoc3_1_slope(1, 1)?;
     let tree_count = tree_count * aoc3_1_slope(1, 3)?;
@@ -206,6 +234,7 @@ fn aoc3_2() -> Result<()> {
     Ok(())
 }
 
+#[cfg(any(feature = "aoc2020-day4-part1", feature = "aoc2020-day4-part2"))]
 fn aoc4_1() -> Result<()> {
     let input = read_file_lines("./aoc2020/aoc_4_1.txt")?;
     let mut passport: Vec<(String, String)> = Vec::new();
@@ -233,7 +262,7 @@ fn aoc4_1() -> Result<()> {
         ecl: bool,
         pid: bool,
         cid: bool,
-    };
+    }
     
     let mut valid = 0;
     let mut valid_passports = Vec::new();
@@ -274,6 +303,7 @@ fn aoc4_1() -> Result<()> {
     Ok(())
 }
 
+#[cfg(any(feature = "aoc2020-day4-part1", feature = "aoc2020-day4-part2"))]
 fn aoc4_2(valid_passports: Vec<Vec<(String, String)>>) -> Result<()> {
     let passports = valid_passports;
     #[derive(Debug)]
@@ -285,12 +315,12 @@ fn aoc4_2(valid_passports: Vec<Vec<(String, String)>>) -> Result<()> {
         hcl: bool,
         ecl: bool,
         pid: bool,
-        cid: bool,
-    };
+        _cid: bool,
+    }
     
     let mut valid = 0;
     for passport in passports {
-        let mut hf = HasFields{ byr: false, iyr: false, eyr: false, hgt: false , ecl: false, pid: false, cid: false, hcl: false };
+        let mut hf = HasFields{ byr: false, iyr: false, eyr: false, hgt: false , ecl: false, pid: false, _cid: false, hcl: false };
         //println!("\t\t\t{:?}", passport);
         for field in &passport {
             match &*field.0 {
@@ -383,6 +413,7 @@ fn aoc4_2(valid_passports: Vec<Vec<(String, String)>>) -> Result<()> {
     Ok(())
 }
 
+#[cfg(any(feature = "aoc2020-day5-part1", feature = "aoc2020-day5-part2"))]
 fn aoc5_1_2() -> Result<()> {
     let bsp_idx = |m: i32, u: char, l: char, x: &str| -> i32 {
         let required_steps = (m as f64).log10() as usize; 
@@ -451,6 +482,7 @@ fn aoc5_1_2() -> Result<()> {
     Ok(())
 }
 
+#[cfg(any(feature = "aoc2020-day6-part1", feature = "aoc2020-day6-part2"))]
 fn aoc6_1_2() -> Result<()> {
     let input = read_file_lines("./aoc2020/aoc_6_1.txt")?;
     let mut groups : Vec<HashMap<char, u16>> = Vec::new();
@@ -497,7 +529,8 @@ fn aoc6_1_2() -> Result<()> {
     Ok(())
 }
 
+#[cfg(any(feature = "aoc2020-day7-part1", feature = "aoc2020-day7-part2"))]
 fn aoc7_1_2() -> Result<()> {
-    let input = read_file_lines_nenl("aoc2020/aoc_7_1.txt")?;
+    let _input = read_file_lines_nenl("aoc2020/aoc_7_1.txt")?;
     Ok(())
 }

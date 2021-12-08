@@ -23,9 +23,9 @@ pub enum AppError {
 
 pub type Result<T, E = AppError> = std::result::Result<T, E>;
 
-#[cfg(feature = "aoc2020")]
+#[cfg(feature = "run_aoc2020")]
 mod aoc2020;
-#[cfg(feature = "aoc2021")]
+#[cfg(feature = "run_aoc2021")]
 mod aoc2021;
 
 pub fn prologue<T: ToString>(p: T) {
@@ -57,14 +57,11 @@ pub fn read_file_lines_nenl(filename: &str) -> Result<Vec<String>> {
 macro_rules! time_func {
     ($c:tt) => {
         let start = std::time::Instant::now();
-        let r = {
-            $c
-        };
+        $c;
         let end = std::time::Instant::now();
         let dur = end.duration_since(start);
         let dur = chrono::Duration::from_std(dur).unwrap();
         println!("-- Time taken: {:03}µs -- ", dur.num_microseconds().unwrap());
-        r
     };
     ($c:expr) => {
         time_func!({$c})
@@ -130,9 +127,9 @@ macro_rules! time_func_rft {
 pub fn main() -> Result<()> {
     env_logger::init();
 
-    #[cfg(feature = "aoc2020")]
+    #[cfg(feature = "run_aoc2020")]
     aoc2020::main()?;
-    #[cfg(feature = "aoc2021")]
+    #[cfg(feature = "run_aoc2021")]
     aoc2021::main()?;
     Ok(())
 }

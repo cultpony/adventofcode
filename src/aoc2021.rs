@@ -1,4 +1,4 @@
-use log::{debug, info, trace, warn};
+use log::{debug, info, trace};
 use std::ops::Add;
 use std::str::FromStr;
 use std::{convert::TryInto, hint::unreachable_unchecked};
@@ -8,35 +8,53 @@ use bit_vec::BitVec;
 use crate::*;
 
 pub fn main() -> Result<()> {
+    #[cfg(any(feature = "aoc2021-day1-part1", feature = "aoc2021-day1-part2"))]
     prologue("AOC1");
+    #[cfg(feature = "aoc2021-day1-part1")]
     time_func!(aoc1_1()?);
+    #[cfg(feature = "aoc2021-day1-part2")]
     time_func!(aoc1_2()?);
 
+    #[cfg(any(feature = "aoc2021-day2-part1", feature = "aoc2021-day2-part2"))]
     prologue("AOC2");
+    #[cfg(feature = "aoc2021-day2-part1")]
     time_func!(aoc2_1()?);
+    #[cfg(feature = "aoc2021-day2-part2")]
     time_func!(aoc2_2()?);
 
+    #[cfg(any(feature = "aoc2021-day3-part1", feature = "aoc2021-day3-part2"))]
     prologue("AOC3");
+    #[cfg(any(feature = "aoc2021-day3-part1", feature = "aoc2021-day3-part2"))]
     time_func!(aoc3_1()?);
 
+    #[cfg(any(feature = "aoc2021-day4-part1", feature = "aoc2021-day4-part2"))]
     prologue("AOC4");
+    #[cfg(any(feature = "aoc2021-day4-part1", feature = "aoc2021-day4-part2"))]
     time_func!(aoc4_1()?);
 
+    #[cfg(any(feature = "aoc2021-day5-part1", feature = "aoc2021-day5-part2"))]
     prologue("AOC5");
+    #[cfg(any(feature = "aoc2021-day5-part1", feature = "aoc2021-day5-part2"))]
     time_func!(aoc5_1()?);
 
+    #[cfg(any(feature = "aoc2021-day6-part1", feature = "aoc2021-day6-part2"))]
     prologue("AOC6");
+    #[cfg(any(feature = "aoc2021-day6-part1", feature = "aoc2021-day6-part2"))]
     time_func!(aoc6_1()?);
 
+    #[cfg(any(feature = "aoc2021-day7-part1", feature = "aoc2021-day7-part2"))]
     prologue("AOC7");
-    time_func_rft!("./aoc2021/aoc_7_1.txt", read_file_lines_nenl, aoc7_1, 1000);
-    time_func_rft!("./aoc2021/aoc_7_1.txt", read_file_lines_nenl, aoc7_2, 1000);
+    #[cfg(feature = "aoc2021-day7-part1")]
+    time_func_rft!("./aoc2021/aoc_7_1.txt", read_file_lines_nenl, aoc7_1, 100);
+    #[cfg(feature = "aoc2021-day7-part2")]
+    time_func_rft!("./aoc2021/aoc_7_1.txt", read_file_lines_nenl, aoc7_2, 100);
 
     epilogue();
 
     Ok(())
 }
 
+#[cfg(feature = "aoc2021-day7-part1")]
 fn aoc7_1(input: Vec<String>) -> Result<String> {
     let input: Vec<i64> = input[0]
         .split(',')
@@ -66,6 +84,7 @@ fn aoc7_1(input: Vec<String>) -> Result<String> {
     Ok(format!("Best solution: {} fuel spent at position {}", best_try.1, best_try.0))
 }
 
+#[cfg(feature = "aoc2021-day7-part2")]
 fn aoc7_2(input: Vec<String>) -> Result<String> {
     let input: Vec<i64> = input[0]
         .split(',')
@@ -74,8 +93,7 @@ fn aoc7_2(input: Vec<String>) -> Result<String> {
 
     let depth_func = |f: i64, depth: i64| -> i64 {
         let r = (f-depth).abs();
-        let r = (r*r+r)/2;
-        r
+        (r*r+r)/2
     };
 
     let max = input.iter().max().unwrap();
@@ -107,6 +125,7 @@ fn aoc7_2(input: Vec<String>) -> Result<String> {
     Ok(format!("Best solution: {} fuel spent at position {}", best_try.1, best_try.0))
 }
 
+#[cfg(any(feature = "aoc2021-day6-part1", feature = "aoc2021-day6-part2"))]
 fn aoc6_1() -> Result<()> {
     let input = read_file_lines_nenl("./aoc2021/aoc_6_1.txt")?;
 
@@ -214,6 +233,7 @@ fn aoc6_1() -> Result<()> {
     Ok(())
 }
 
+#[cfg(any(feature = "aoc2021-day5-part1", feature = "aoc2021-day5-part2"))]
 fn aoc5_1() -> Result<()> {
     let input = read_file_lines_nenl("./aoc2021/aoc_5_1.txt")?;
 
@@ -329,12 +349,12 @@ fn aoc5_1() -> Result<()> {
     {
         fn new() -> Self {
             let mut v = Vec::new();
-            for i in 0..N {
+            for _ in 0..N {
                 v.push(T::default());
             }
             let r: [T; N] = v.try_into().unwrap();
             let mut v = Vec::new();
-            for i in 0..M {
+            for _ in 0..M {
                 v.push(Box::new(r.clone()));
             }
             let r: [Box<[T; N]>; M] = v.try_into().unwrap();
@@ -373,17 +393,19 @@ fn aoc5_1() -> Result<()> {
             acc
         }
         fn print(&self) {
+            let mut o = String::new();
             for j in 0..M {
                 for i in 0..N {
                     let v = self.get(i, j);
                     if v == T::default() {
-                        print!(".");
+                        o += "."
                     } else {
-                        print!("{:?}", v);
+                        o += &format!("{:?}", v);
                     }
                 }
-                println!("");
+                o += "\n"
             }
+            debug!("\n{}", o);
         }
         fn reset(&mut self) {
             for j in 0..M {
@@ -466,7 +488,7 @@ fn aoc5_1() -> Result<()> {
         .copied()
         .collect();
 
-    println!("Got {} lines either H or V", hvlines.len());
+    debug!("Got {} lines either H or V", hvlines.len());
 
     let max_x = hvlines
         .iter()
@@ -482,7 +504,7 @@ fn aoc5_1() -> Result<()> {
     assert!(max_x < 1000);
     assert!(max_y < 1000);
 
-    println!("Playing field: {}x{}", max_x, max_y);
+    debug!("Playing field: {}x{}", max_x, max_y);
 
     let mut playing_field = PlayingField::<u8, 1000, 1000>::new();
     assert_eq!(0, playing_field.get(max_x, max_y));
@@ -490,7 +512,7 @@ fn aoc5_1() -> Result<()> {
     assert_eq!(0, playing_field.get(max_x, 0));
     assert_eq!(0, playing_field.get(0, 0));
 
-    println!("PF Self Test Complete");
+    debug!("PF Self Test Complete");
 
     {
         let input: Vec<&str> = r#"0,9 -> 5,9
@@ -524,20 +546,20 @@ fn aoc5_1() -> Result<()> {
 
         pf.print();
 
-        println!("Applying test lines");
+        debug!("Applying test lines");
 
         pf.apply_lines(&hvlines);
 
-        println!("Applied test lines");
+        debug!("Applied test lines");
 
         pf.print();
         pf.reset();
 
-        println!("Applying diagonal lines");
+        debug!("Applying diagonal lines");
 
         pf.apply_lines(&input);
 
-        println!("Applied test lines");
+        debug!("Applied test lines");
 
         pf.print();
     }
@@ -546,7 +568,7 @@ fn aoc5_1() -> Result<()> {
 
     playing_field.apply_lines(&hvlines);
 
-    println!("Completed HV run, counting overlaps");
+    debug!("Completed HV run, counting overlaps");
 
     let overlaps: usize = playing_field.fold(0usize, |mut acc: usize, v: usize| {
         if v >= 2 {
@@ -555,7 +577,7 @@ fn aoc5_1() -> Result<()> {
         acc
     });
 
-    println!("Overlaps: {}", overlaps);
+    debug!("Overlaps: {}", overlaps);
 
     playing_field.reset();
 
@@ -573,6 +595,7 @@ fn aoc5_1() -> Result<()> {
     Ok(())
 }
 
+#[cfg(any(feature = "aoc2021-day4-part1", feature = "aoc2021-day4-part2"))]
 fn aoc4_1() -> Result<()> {
     let mut input = read_file_lines("./aoc2021/aoc_4_1.txt")?;
 
@@ -654,7 +677,7 @@ fn aoc4_1() -> Result<()> {
                 [(0, false), (0, false), (0, false), (0, false), (0, false)],
                 [(0, false), (0, false), (0, false), (0, false), (0, false)],
             ];
-            //println!("Converting board vec->arr");
+            debug!("Converting board vec->arr");
             for (i, n) in r.into_iter().enumerate() {
                 for (j, m) in n.iter().enumerate() {
                     r2[i][j] = *m;
@@ -709,7 +732,7 @@ fn aoc4_1() -> Result<()> {
         }
         assert!(b.winner(), "Must be winner now");
     }
-    println!("Passed selftest");
+    info!("Passed selftest");
 
     let nums: Vec<u8> = input
         .remove(0)
@@ -735,7 +758,7 @@ fn aoc4_1() -> Result<()> {
                 input.remove(0);
             }
         }
-        //println!("Parsing board {:?}", inp);
+        trace!("Parsing board {:?}", inp);
         boards.push(
             inp.parse::<Board>()
                 .expect(&format!("parsing board {} failed", inp)),
@@ -746,7 +769,7 @@ fn aoc4_1() -> Result<()> {
     let mut last_num = 0;
     for num in nums.clone() {
         last_num = num;
-        //println!("Num: {}", num);
+        trace!("Num: {}", num);
         boards.iter_mut().for_each(|b| b.mark(num));
         if boards.iter().any(|x| x.winner()) {
             break;
@@ -762,7 +785,7 @@ fn aoc4_1() -> Result<()> {
     let mut losing_board = None;
     for num in nums {
         last_num = num;
-        //println!("Num: {}", num);
+        trace!("Num: {}", num);
         {
             boards.iter_mut().for_each(|b| b.mark(num));
             if losing_board.is_some() {
@@ -785,6 +808,7 @@ fn aoc4_1() -> Result<()> {
     Ok(())
 }
 
+#[cfg(any(feature = "aoc2021-day3-part1", feature = "aoc2021-day3-part2"))]
 fn aoc3_1() -> Result<()> {
     let input = read_file_lines_nenl("./aoc2021/aoc_3_1.txt")?;
     assert_eq!(
@@ -799,10 +823,11 @@ fn aoc3_1() -> Result<()> {
     Ok(())
 }
 
+#[cfg(any(feature = "aoc2021-day3-part1", feature = "aoc2021-day3-part2"))]
 fn aoc3_1c<S: ToString>(v: &[S]) -> u64 {
     let width = v[0].to_string().chars().count();
     assert!(width < 8 * 8);
-    println!("Width: {}", width);
+    debug!("Width: {}", width);
     let mut one_cnt: Vec<usize> = Vec::with_capacity(width);
     let mut zer_cnt: Vec<usize> = Vec::with_capacity(width);
     for _ in 0..width {
@@ -825,12 +850,12 @@ fn aoc3_1c<S: ToString>(v: &[S]) -> u64 {
     let mut gamma_rate = BitVec::from_elem(width, false);
     let mut epsilon_rate = BitVec::from_elem(width, false);
     for i in 0..width {
-        println!("Bit {}: {} 0, {} 1", i, zer_cnt[i], one_cnt[i]);
+        trace!("Bit {}: {} 0, {} 1", i, zer_cnt[i], one_cnt[i]);
         if one_cnt[i] > zer_cnt[i] {
-            println!("Bit {}: GR", i);
+            trace!("Bit {}: GR", i);
             gamma_rate.set(i, true);
         } else if zer_cnt[i] > one_cnt[i] {
-            println!("Bit {}: ER", i);
+            trace!("Bit {}: ER", i);
             epsilon_rate.set(i, true);
         } else {
             unreachable!()
@@ -843,7 +868,7 @@ fn aoc3_1c<S: ToString>(v: &[S]) -> u64 {
             g
         } == epsilon_rate
     );
-    println!("GR: {:?}", gamma_rate);
+    debug!("GR: {:?}", gamma_rate);
     let gamma_rate = gamma_rate.to_bytes();
     let gamma_rate = {
         let mut buf = [0; 8];
@@ -852,8 +877,8 @@ fn aoc3_1c<S: ToString>(v: &[S]) -> u64 {
         }
         u64::from_be_bytes(buf)
     };
-    println!("GR: {:#018b}", gamma_rate);
-    println!("ER: {:?}", epsilon_rate);
+    debug!("GR: {:#018b}", gamma_rate);
+    debug!("ER: {:?}", epsilon_rate);
     let epsilon_rate = epsilon_rate.to_bytes();
     let epsilon_rate = {
         let mut buf = [0; 8];
@@ -866,6 +891,7 @@ fn aoc3_1c<S: ToString>(v: &[S]) -> u64 {
     gamma_rate * epsilon_rate
 }
 
+#[cfg(feature = "aoc2021-day2-part1")]
 fn aoc2_1() -> Result<()> {
     enum Direction {
         Horizontal(u32),
@@ -896,6 +922,7 @@ fn aoc2_1() -> Result<()> {
     Ok(())
 }
 
+#[cfg(feature = "aoc2021-day2-part2")]
 fn aoc2_2() -> Result<()> {
     #[derive(Debug)]
     enum Direction {
@@ -931,6 +958,7 @@ fn aoc2_2() -> Result<()> {
     Ok(())
 }
 
+#[cfg(feature = "aoc2021-day1-part1")]
 fn aoc1_1() -> Result<()> {
     let input: Vec<u32> = read_file_lines_nenl("./aoc2021/aoc_1_1.txt")?
         .iter()
@@ -943,6 +971,7 @@ fn aoc1_1() -> Result<()> {
     Ok(())
 }
 
+#[cfg(any(feature = "aoc2021-day1-part1", feature = "aoc2021-day1-part2"))]
 fn aoc1_1c(f: &[u32]) -> u32 {
     let result: (Option<u32>, u32) = f.iter().fold((None, 0), |x, y| {
         match x.0 {
@@ -961,6 +990,7 @@ fn aoc1_1c(f: &[u32]) -> u32 {
     result.1
 }
 
+#[cfg(feature = "aoc2021-day1-part2")]
 fn aoc1_2() -> Result<()> {
     let input: Vec<u32> = read_file_lines_nenl("./aoc2021/aoc_1_1.txt")?
         .iter()
@@ -973,6 +1003,7 @@ fn aoc1_2() -> Result<()> {
     Ok(())
 }
 
+#[cfg(feature = "aoc2021-day1-part2")]
 fn aoc1_2c(f: &[u32]) -> u32 {
     let res: Vec<u32> = f
         .iter()

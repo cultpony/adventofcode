@@ -13,6 +13,8 @@ chrono = "0.4.19"
 bit-vec = "0.6.3"
 log = "0.4.14"
 env_logger = "0.9.0"
+itertools = "0.10.3"
+peg = "0.7.0"
 
 [features]
 default = ["aoc2021"]
@@ -42,8 +44,9 @@ aoc2020-day6-part1 = ["run_aoc2020"]
 aoc2020-day6-part2 = ["run_aoc2020"]
 aoc2020-day7-part1 = ["run_aoc2020"]
 aoc2020-day7-part2 = ["run_aoc2020"]
-aoc2021 = ["aoc2021-week1"]
+aoc2021 = ["aoc2021-week1", "aoc2021-week2"]
 aoc2021-week1 = ["aoc2021-day1", "aoc2021-day2", "aoc2021-day3", "aoc2021-day4", "aoc2021-day5", "aoc2021-day6", "aoc2021-day7"]
+aoc2021-week2 = ["aoc2021-day8", "aoc2021-day9"]
 aoc2021-day1 = ["aoc2021-day1-part1", "aoc2021-day1-part2"]
 aoc2021-day2 = ["aoc2021-day2-part1", "aoc2021-day2-part2"]
 aoc2021-day3 = ["aoc2021-day3-part1", "aoc2021-day3-part2"]
@@ -51,6 +54,8 @@ aoc2021-day4 = ["aoc2021-day4-part1", "aoc2021-day4-part2"]
 aoc2021-day5 = ["aoc2021-day5-part1", "aoc2021-day5-part2"]
 aoc2021-day6 = ["aoc2021-day6-part1", "aoc2021-day6-part2"]
 aoc2021-day7 = ["aoc2021-day7-part1", "aoc2021-day7-part2"]
+aoc2021-day8 = ["aoc2021-day8-part1"]
+aoc2021-day9 = ["aoc2021-day9-part1", "aoc2021-day9-part2"]
 aoc2021-day1-part1 = ["run_aoc2021"]
 aoc2021-day1-part2 = ["run_aoc2021"]
 aoc2021-day2-part1 = ["run_aoc2021"]
@@ -65,6 +70,10 @@ aoc2021-day6-part1 = ["run_aoc2021"]
 aoc2021-day6-part2 = ["run_aoc2021"]
 aoc2021-day7-part1 = ["run_aoc2021"]
 aoc2021-day7-part2 = ["run_aoc2021"]
+aoc2021-day8-part1 = ["run_aoc2021"]
+aoc2021-day8-part2 = ["run_aoc2021"]
+aoc2021-day9-part1 = ["run_aoc2021"]
+aoc2021-day9-part2 = ["run_aoc2021"]
 
 [profile.release]
 opt-level = 3

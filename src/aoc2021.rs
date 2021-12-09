@@ -49,9 +49,445 @@ pub fn main() -> Result<()> {
     #[cfg(feature = "aoc2021-day7-part2")]
     time_func_rft!("./aoc2021/aoc_7_1.txt", read_file_lines_nenl, aoc7_2, 100);
 
+    #[cfg(any(feature = "aoc2021-day8-part1"))]
+    prologue("AOC8");
+    #[cfg(feature = "aoc2021-day8-part1")]
+    time_func_rft!("./aoc2021/aoc_8_1.txt", read_file_lines_nenl, aoc8_1, 100);
+    #[cfg(feature = "aoc2021-day8-part2")]
+    time_func_rft!("./aoc2021/aoc_8_1.txt", read_file_lines_nenl, aoc8_2, 100);
+
+    #[cfg(any(feature = "aoc2021-day9-part1"))]
+    prologue("AOC9");
+    #[cfg(feature = "aoc2021-day9-part1")]
+    time_func_rft!("./aoc2021/aoc_9_1.txt", read_file_lines_nenl, aoc9_1, 100);
+    #[cfg(feature = "aoc2021-day9-part2")]
+    time_func_rft!("./aoc2021/aoc_9_1.txt", read_file_lines_nenl, aoc9_2, 100);
+
     epilogue();
 
     Ok(())
+}
+
+
+#[cfg(feature = "aoc2021-day9-part1")]
+fn aoc9_2(input: Vec<String>) -> Result<String> {
+    use std::collections::{HashSet, HashMap};
+
+    use itertools::Itertools;
+
+    struct PlayingField<
+        T: Eq + Ord + Clone + Copy + Default + std::fmt::Debug + Add<u8, Output = T>,
+        const N: usize,
+        const M: usize,
+    > {
+        f: Box<[Box<[T; N]>; M]>,
+    }
+
+    impl<
+            T: Eq + Ord + Clone + Copy + Default + std::fmt::Debug + Add<u8, Output = T>,
+            const N: usize,
+            const M: usize,
+        > PlayingField<T, N, M>
+    {
+        fn new() -> Self {
+            let mut v = Vec::new();
+            for _ in 0..N {
+                v.push(T::default());
+            }
+            let r: [T; N] = v.try_into().unwrap();
+            let mut v = Vec::new();
+            for _ in 0..M {
+                v.push(Box::new(r.clone()));
+            }
+            let r: [Box<[T; N]>; M] = v.try_into().unwrap();
+            Self { f: Box::new(r) }
+        }
+        fn get(&self, x: isize, y: isize) -> Option<T> {
+            if y >= N as isize || x >= M as isize || x < 0 || y < 0 {
+                return None;
+            };
+            assert!((y as usize) < N);
+            assert!((x as usize) < M);
+            assert!(y >= 0);
+            assert!(x >= 0);
+            Some(self.f[y as usize][x as usize])
+        }
+        fn get_dneighbours(&self, x: usize, y: usize) -> [Option<T>; 4] {
+            [
+                self.get(x as isize +1, y as isize),
+                self.get(x as isize, y as isize +1),
+                self.get(x as isize -1, y as isize),
+                self.get(x as isize , y as isize - 1),
+            ]
+        }
+        fn is_low(&self, x: usize, y: usize) -> bool {
+            let s = self.get(x as isize, y as isize).unwrap();
+            let nbs = self.get_dneighbours(x, y);
+            let nbs: Vec<&T> = nbs.into_iter().filter_map(|x| x.as_ref()).collect();
+            nbs.iter().all(|x| **x > s)
+        }
+        fn swap(&mut self, x: usize, y: usize, d: T) -> T {
+            assert!(y < N);
+            assert!(x < M);
+            let v = self.f[y][x];
+            self.f[y][x] = d;
+            v
+        }
+        fn apply<R: FnMut(T) -> T>(&mut self, x: usize, y: usize, mut d: R) -> (T, T) {
+            assert!(y < N);
+            assert!(x < M);
+            let v = self.f[y][x];
+            let nv = d(v);
+            self.f[y][x] = nv;
+            (v, nv)
+        }
+        fn fold<Q, R: FnMut(Q, usize, usize, &Self) -> Q>(&self, start: Q, mut d: R) -> Q
+        {
+            let mut acc = start;
+            for i in 0..N {
+                for j in 0..M {
+                    acc = d(acc, i, j, self)
+                }
+            }
+            acc
+        }
+        /// Returns the size of the basin at that position
+        /// as well as a XOR hash of the basin contents
+        fn basin(&self, x: usize, y: usize) -> Option<(usize, usize)> {
+            if !self.is_low(x, y) {
+                return None
+            }
+            let mut visited: HashSet<(usize, usize)> = HashSet::new();
+            visited.insert((x, y));
+            let mut candidates = Vec::<(usize, usize)>::new();
+            candidates.push((x+1, y));
+            candidates.push((x, y+1));
+            candidates.push((x-1, y));
+            candidates.push((x, y-1));
+            while candidates.len() > 0 {
+                let candidate = candidates.pop().unwrap();
+                if visited.contains(&candidate) {
+                    continue;
+                }
+                visited.insert(candidate);
+                if let Some(p) = self.get(candidate.0 as isize, candidate.1 as isize) {
+                    let new_candidates = vec![
+                        (candidate.0 + 1, candidate.1),
+                        (candidate.0, candidate.1 + 1),
+                        (candidate.0 - 1, candidate.1),
+                        (candidate.0, candidate.1 - 1),
+                    ];
+                    let new_candidates: Vec<(usize, usize)> = new_candidates.into_iter()
+                        .filter(|r| !visited.contains(r))
+                        .filter(|r| r.0 > 0 && r.1 > 0 && r.0 < N && r.1 < M)
+                        .collect();
+                    if new_candidates.iter().all(|x| self.get(x.0 as isize, x.1 as isize).unwrap() > p) {
+                        candidates.extend(new_candidates.iter());
+                    }
+                }
+            }
+            let hash: usize = visited.iter().sorted().fold(0, |acc, x| acc ^ x.0 ^ x.1);
+            Some((visited.len(), hash))
+        }
+        fn print(&self) {
+            let mut o = String::new();
+            for j in 0..M {
+                for i in 0..N {
+                    let v = self.get(i as isize, j as isize);
+                    if v == Some(T::default()) {
+                        o += "."
+                    } else {
+                        o += &format!("{:?}", v);
+                    }
+                }
+                o += "\n"
+            }
+            debug!("\n{}", o);
+        }
+        fn reset(&mut self) {
+            for j in 0..M {
+                for i in 0..N {
+                    self.swap(i, j, T::default());
+                }
+            }
+        }
+    }
+
+    let height = input.len();
+    let input: Vec<Vec<char>> = input.into_iter().map(|x| x.chars().collect::<Vec<char>>()).collect();
+    let width = input[0].len();
+
+    let mut pf = PlayingField::<u8, 100, 100>::new();
+
+    for (i, line) in input.iter().enumerate() {
+        for (j, pos) in line.iter().enumerate() {
+            pf.swap(i, j, pos.to_digit(10).unwrap() as u8);
+        }
+    }
+
+    let r = pf.fold(Vec::<(usize, usize)>::new(), |mut acc, x, y, pf| {
+        if pf.is_low(x, y) {
+            acc.push((x, y))
+        }
+        acc
+    });
+
+    println!("Candidate basins: {:?}", r);
+
+    let mut basins = HashMap::<usize, usize>::new();
+    for r in r {
+        if let Some(basin) = pf.basin(r.0, r.1) {
+            if !basins.contains_key(&basin.1) {
+                println!("Inserting basin size {} hash {}", basin.0, basin.1);
+                basins.insert(basin.1, basin.0);
+            }
+        }
+    }
+
+    let r: usize = basins.iter().sorted_by(|x, y| x.1.cmp(y.1)).map(|x| x.1).rev().take(3).fold(1, |acc, x| acc * x);
+
+    Ok(format!("Result: {}", r))
+}
+
+#[cfg(feature = "aoc2021-day9-part1")]
+fn aoc9_1(input: Vec<String>) -> Result<String> {
+    struct PlayingField<
+        T: Eq + Ord + Clone + Copy + Default + std::fmt::Debug + Add<u8, Output = T>,
+        const N: usize,
+        const M: usize,
+    > {
+        f: Box<[Box<[T; N]>; M]>,
+    }
+
+    impl<
+            T: Eq + Ord + Clone + Copy + Default + std::fmt::Debug + Add<u8, Output = T>,
+            const N: usize,
+            const M: usize,
+        > PlayingField<T, N, M>
+    {
+        fn new() -> Self {
+            let mut v = Vec::new();
+            for _ in 0..N {
+                v.push(T::default());
+            }
+            let r: [T; N] = v.try_into().unwrap();
+            let mut v = Vec::new();
+            for _ in 0..M {
+                v.push(Box::new(r.clone()));
+            }
+            let r: [Box<[T; N]>; M] = v.try_into().unwrap();
+            Self { f: Box::new(r) }
+        }
+        fn get(&self, x: isize, y: isize) -> Option<T> {
+            if y >= N as isize || x >= M as isize || x < 0 || y < 0 {
+                return None;
+            };
+            assert!((y as usize) < N);
+            assert!((x as usize) < M);
+            assert!(y >= 0);
+            assert!(x >= 0);
+            Some(self.f[y as usize][x as usize])
+        }
+        fn get_dneighbours(&self, x: usize, y: usize) -> [Option<T>; 4] {
+            [
+                self.get(x as isize +1, y as isize),
+                self.get(x as isize, y as isize +1),
+                self.get(x as isize -1, y as isize),
+                self.get(x as isize , y as isize - 1),
+            ]
+        }
+        fn is_low(&self, x: usize, y: usize) -> bool {
+            let s = self.get(x as isize, y as isize).unwrap();
+            let nbs = self.get_dneighbours(x, y);
+            let nbs: Vec<&T> = nbs.into_iter().filter_map(|x| x.as_ref()).collect();
+            nbs.iter().all(|x| **x > s)
+        }
+        fn swap(&mut self, x: usize, y: usize, d: T) -> T {
+            assert!(y < N);
+            assert!(x < M);
+            let v = self.f[y][x];
+            self.f[y][x] = d;
+            v
+        }
+        fn apply<R: FnMut(T) -> T>(&mut self, x: usize, y: usize, mut d: R) -> (T, T) {
+            assert!(y < N);
+            assert!(x < M);
+            let v = self.f[y][x];
+            let nv = d(v);
+            self.f[y][x] = nv;
+            (v, nv)
+        }
+        fn fold<Q, R: FnMut(Q, usize, usize, &Self) -> Q>(&self, start: Q, mut d: R) -> Q
+        where
+            T: Into<Q>,
+        {
+            let mut acc = start;
+            for i in 0..N {
+                for j in 0..M {
+                    acc = d(acc, i, j, self)
+                }
+            }
+            acc
+        }
+        fn print(&self) {
+            let mut o = String::new();
+            for j in 0..M {
+                for i in 0..N {
+                    let v = self.get(i as isize, j as isize);
+                    if v == Some(T::default()) {
+                        o += "."
+                    } else {
+                        o += &format!("{:?}", v);
+                    }
+                }
+                o += "\n"
+            }
+            debug!("\n{}", o);
+        }
+        fn reset(&mut self) {
+            for j in 0..M {
+                for i in 0..N {
+                    self.swap(i, j, T::default());
+                }
+            }
+        }
+    }
+
+    let height = input.len();
+    let input: Vec<Vec<char>> = input.into_iter().map(|x| x.chars().collect::<Vec<char>>()).collect();
+    let width = input[0].len();
+
+    let mut pf = PlayingField::<u8, 100, 100>::new();
+
+    for (i, line) in input.iter().enumerate() {
+        for (j, pos) in line.iter().enumerate() {
+            pf.swap(i, j, pos.to_digit(10).unwrap() as u8);
+        }
+    }
+
+    let a = pf.fold(0u64, |mut acc, x, y, pf| {
+        if pf.is_low(x, y) {
+            trace!("Acc={}, new low", acc);
+            acc += pf.get(x as isize, y as isize).unwrap() as u64 + 1
+        }
+        acc
+    });
+
+    Ok(format!("Risk Sum: {}", a))
+}
+
+#[cfg(feature = "aoc2021-day8-part2")]
+fn aoc8_2(input: Vec<String>) -> Result<String> {
+    use itertools::Itertools;
+
+    const BASE: u32 = 'a' as u32;
+    const ALPHABET: &str = "abcdefg";
+    struct Mapping([Option<char>; 8]);
+    impl Mapping {
+        fn new() -> Self{ Self([None; 8]) }
+        fn r2d(&self, s: char) -> Option<char> {
+            let i = s as u32 - BASE;
+            assert!((i as usize) < self.0.len(), "Digit out of range");
+            self.0[s as usize]
+        }
+        fn srmap(&mut self, s: char, m: char) {
+            let i = s as u32 - BASE;
+            self.0[s as usize] = Some(m);
+        }
+        fn exclude(a: &str, b: &str) -> String {
+            a.chars().filter(|x| !b.contains(*x)).collect()
+        }
+        fn union(a: &str, b: &str) -> String {
+            a.chars().filter(|x| b.contains(*x)).collect()
+        }
+        fn overlay(a: &str, b: &str) -> String {
+            a.chars().chain(b.chars()).unique().collect()
+        }
+        fn classify(&mut self, digit4: &str, digit7: &str, digit1: &str, digit8: &str, rest: Vec<&str>) -> Option<u8> {
+            let a = Self::exclude(digit7, digit1);
+            debug!("Wire A => {}", a);
+            assert!(a.len() == 1, "A digit is not unique");
+            let digit6: Vec<&str> = rest.iter().filter(|x| {
+                Mapping::union(x, digit1).len() == 7 &&
+                Mapping::union(x, digit4).len() != 7 &&
+                Mapping::union(&Mapping::exclude(ALPHABET, x), digit1).len() == 2
+            }).cloned().collect();
+            assert!(digit6.len() == 1);
+            let digit6 = digit6[0];
+            debug!("Digit 6 => {}", digit6);
+            todo!()
+        }
+    }
+
+    fn classify<'a>(inp: &'a str) -> Option<(&'a str, u8)> {
+        trace!("Input: {}", inp);
+        match inp.len() {
+            3 => Some((inp, 7)),
+            4 => Some((inp, 4)),
+            2 => Some((inp, 1)),
+            7 => Some((inp, 8)),
+            _ => None,
+        }
+    }
+
+    let input: Vec<(Vec<&str>, Vec<&str>)> = input.iter().map_while(|x: &String| {
+        x.split_once('|')
+    })
+        .map(|x| {(
+            x.0.split(" ").filter(|x| !x.is_empty()).collect::<Vec<&str>>(),
+            x.1.split(" ").filter(|x| !x.is_empty()).collect::<Vec<&str>>()
+        )})
+    .collect();
+
+    let cinp: Vec<Option<Vec<(&str, u8)>>> = input.iter().map(|x| &x.1)
+        .map(|x| x.iter().map(|y| classify(*y)).collect::<Option<Vec<(&str, u8)>>>())
+        .collect();
+
+    debug!("Got {} CINPs", cinp.len());
+    
+    let r: Vec<Mapping> = input.iter().zip(cinp.iter()).map(|x| {
+        let ex = &x.0.0;
+        let output = &x.0.1;
+        let dec = x.1.clone().unwrap();
+        assert!(dec.len() == 4, "4 Example Digits Coded");
+        todo!()
+    }).collect();
+
+    todo!()
+}
+
+#[cfg(feature = "aoc2021-day8-part1")]
+fn aoc8_1(input: Vec<String>) -> Result<String> {
+    let classify = |inp: &str| -> Option<u8> {
+        trace!("Input: {}", inp);
+        match inp.len() {
+            3 => Some(7),
+            4 => Some(4),
+            2 => Some(1),
+            7 => Some(8),
+            _ => None,
+        }
+    };
+
+    let input: Vec<(Vec<&str>, Vec<&str>)> = input.iter().map_while(|x: &String| {
+        x.split_once('|')
+    })
+        .map(|x| {(
+            x.0.split(" ").filter(|x| !x.is_empty()).collect::<Vec<&str>>(),
+            x.1.split(" ").filter(|x| !x.is_empty()).collect::<Vec<&str>>()
+        )})
+    .collect();
+
+    let cinp: Vec<u8> = input.iter().map(|x| &x.1).flatten().filter_map(|x| classify(x)).collect();
+
+    let mut counts: [u32; 8] = [0; 8];
+
+    for r in cinp {
+        assert!((r as usize) -1 < counts.len(), "Must be in range of array: Got {}", r);
+        counts[r as usize -1] += 1;
+    }
+
+    Ok(format!("Sum all recognized digits: {}", counts.iter().sum::<u32>()))
 }
 
 #[cfg(feature = "aoc2021-day7-part1")]

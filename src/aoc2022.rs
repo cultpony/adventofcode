@@ -1,4 +1,3 @@
-
 use color_eyre::eyre::ContextCompat;
 use rayon::prelude::IntoParallelRefIterator;
 
@@ -6,13 +5,7 @@ use crate::*;
 
 #[tracing::instrument]
 pub async fn main() -> Result<()> {
-    let (
-        day1_part1,
-        day1_part2,
-    ) = tokio::join!(
-        aoc2022_day1_part1(),
-        aoc2022_day1_part2(),
-    );
+    let (day1_part1, day1_part2) = tokio::join!(aoc2022_day1_part1(), aoc2022_day1_part2(),);
     day1_part1?;
     day1_part2?;
     Ok(())
@@ -42,7 +35,11 @@ pub async fn aoc2022_day1_part2() -> Result<()> {
     let mut max_elves_list = Vec::new();
 
     for _ in 0..max_elves {
-        let (max_elf_idx, max_elf) = elves.par_iter().enumerate().max_by(|(_, a), (_, b)| a.cmp(b)).context("no maximum in list")?;
+        let (max_elf_idx, max_elf) = elves
+            .par_iter()
+            .enumerate()
+            .max_by(|(_, a), (_, b)| a.cmp(b))
+            .context("no maximum in list")?;
         max_elves_list.push(*max_elf);
         elves.remove(max_elf_idx);
     }

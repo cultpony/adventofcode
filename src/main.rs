@@ -1,11 +1,10 @@
-
 use std::pin::Pin;
 
-pub use color_eyre::{Result, eyre::Context};
-pub use tracing::{trace, debug, info, warn, error};
+pub use color_eyre::{eyre::Context, Result};
 pub use rayon::prelude::*;
 use tokio::io::AsyncBufReadExt;
 use tokio_stream::{Stream, StreamExt};
+pub use tracing::{debug, error, info, trace, warn};
 
 mod aoc2022;
 
@@ -17,19 +16,21 @@ pub async fn read_file_lines(filename: &str) -> Result<Pin<Box<dyn Stream<Item =
     Ok(Box::pin(lines.map(|f| f.unwrap())))
 }
 
-pub async fn skip_empty_lines<F: Stream<Item = String> + 'static>(f: F) -> Pin<Box<dyn Stream<Item = String>>> {
+pub async fn skip_empty_lines<F: Stream<Item = String> + 'static>(
+    f: F,
+) -> Pin<Box<dyn Stream<Item = String>>> {
     Box::pin(f.filter(|f| !f.is_empty()))
 }
 
 #[tracing::instrument]
 #[tokio::main]
-pub async fn main() -> Result<()> {    // a builder for `FmtSubscriber`.
+pub async fn main() -> Result<()> {
+    // a builder for `FmtSubscriber`.
     let subscriber = tracing_subscriber::FmtSubscriber::builder()
         .with_max_level(tracing::Level::TRACE)
         .finish();
 
-    tracing::subscriber::set_global_default(subscriber)
-        .expect("setting default subscriber failed");
+    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
 
     color_eyre::install()?;
 

@@ -1,5 +1,3 @@
-use tracing::Instrument;
-
 use crate::*;
 
 mod day1;
@@ -55,10 +53,10 @@ impl std::fmt::Display for TaskPart {
 pub async fn main() -> Result<()> {
     let start = tokio::time::Instant::now();
     let mut set = tokio::task::JoinSet::new();
-    set.spawn(day1::part1().instrument(tracing::info_span!("aoc2022d1p1")));
-    set.spawn(day1::part2().instrument(tracing::info_span!("aoc2022d1p2")));
-    set.spawn(day2::part1().instrument(tracing::info_span!("aoc2022d2p1")));
-    set.spawn(day2::part2().instrument(tracing::info_span!("aoc2022d2p2")));
+    set.spawn(day1::part1());
+    set.spawn(day1::part2());
+    set.spawn(day2::part1());
+    set.spawn(day2::part2());
     let mut results = Vec::new();
     while let Some(res) = set.join_next().await {
         let res = res??;

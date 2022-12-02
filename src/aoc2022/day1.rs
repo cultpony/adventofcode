@@ -22,7 +22,7 @@ pub async fn part2() -> Result<Reportable> {
         }
     }
 
-    debug!("Done calculating list");
+    trace!("Done calculating list");
 
     let max_elves = 3;
     let mut max_elves_list = Vec::new();
@@ -38,8 +38,6 @@ pub async fn part2() -> Result<Reportable> {
     }
 
     let max_elf: i32 = max_elves_list.iter().sum();
-
-    info!("Biggest calorie take is {max_elf}");
 
     Ok(Reportable {
         year: 2022,
@@ -67,11 +65,9 @@ pub async fn part1() -> Result<Reportable> {
         }
     }
 
-    debug!("Done calculating list");
+    trace!("Done calculating list");
 
     let max_elf = elves.par_iter().max().context("no maximum in list")?;
-
-    info!("Biggest calorie take is {max_elf}");
 
     Ok(Reportable {
         year: 2022,

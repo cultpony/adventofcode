@@ -1,7 +1,7 @@
 use crate::*;
 
-mod day1;
-mod day2;
+pub mod day1;
+pub mod day2;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]

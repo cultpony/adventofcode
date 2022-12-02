@@ -1,5 +1,5 @@
 [package]
-name = "aoc2020"
+name = "aoc"
 version = "0.1.0"
 authors = ["Tim Schuster <mail@timschuster.info>"]
 edition = "2021"
@@ -19,6 +19,13 @@ tokio-stream = { version = "0.1.11", features = ["io-util", "fs"] }
 tracing = "0.1"
 tracing-error = "0.2.0"
 tracing-subscriber = { version = "0.3.16", features = ["std", "env-filter", "fmt"] }
+
+[dev-dependencies]
+criterion = { version = "0.3", features = ["stable"] }
+
+[[bench]]
+name = "aoc2022"
+harness = false
 
 [features]
 

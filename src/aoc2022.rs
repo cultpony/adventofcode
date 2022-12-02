@@ -1,79 +1,72 @@
-use color_eyre::eyre::ContextCompat;
-use rayon::prelude::IntoParallelRefIterator;
-
 use crate::*;
+
+mod day2;
+mod day1;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum TaskResult {
+    I128(i128),
+    U128(u128),
+    I64(i64),
+    U64(u64),
+    I32(i32),
+    U32(u32),
+    /// Task not yet implemented
+    Todo,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Reportable {
+    year: i16,
+    day: i8,
+    part: TaskPart,
+    result: TaskResult,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum TaskPart {
+    Part1,
+    Part2,
+}
+
+impl From<u8> for TaskPart {
+    fn from(u: u8) -> Self {
+        match u {
+            1 => TaskPart::Part1,
+            2 => TaskPart::Part2,
+            _ => panic!("invalid task part"),
+        }
+    }
+}
+
+impl std::fmt::Display for TaskPart {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TaskPart::Part1 => f.write_str("part 1"),
+            TaskPart::Part2 => f.write_str("part 2"),
+        }
+    }
+}
 
 #[tracing::instrument]
 pub async fn main() -> Result<()> {
-    let (day1_part1, day1_part2) = tokio::join!(aoc2022_day1_part1(), aoc2022_day1_part2(),);
-    day1_part1?;
-    day1_part2?;
-    Ok(())
-}
-
-#[tracing::instrument]
-pub async fn aoc2022_day1_part2() -> Result<()> {
-    let mut elves: Vec<i32> = Vec::new();
-
-    let mut input = read_file_lines("aoc2022/day1_1.txt").await?;
-
-    let mut cur_elf = 0;
-    while let Some(v) = input.next().await {
-        if v.is_empty() {
-            trace!("Elf carries {cur_elf} calories, backpack concluded, pushing on list");
-            elves.push(cur_elf);
-            cur_elf = 0;
-        } else {
-            let v: i32 = v.parse().context("not a number on line")?;
-            cur_elf += v;
-        }
+    let start = tokio::time::Instant::now();
+    let mut set = tokio::task::JoinSet::new();
+    set.spawn(day1::part1());
+    set.spawn(day1::part2());
+    set.spawn(day2::part1());
+    set.spawn(day2::part2());
+    let mut results = Vec::new();
+    while let Some(res) = set.join_next().await {
+        let res = res??;
+        results.push(res);
+        info!("Finished Task aoc{}/day {}/{}: {:?}", res.year, res.day, res.part, res.result);
     }
-
-    debug!("Done calculating list");
-
-    let max_elves = 3;
-    let mut max_elves_list = Vec::new();
-
-    for _ in 0..max_elves {
-        let (max_elf_idx, max_elf) = elves
-            .par_iter()
-            .enumerate()
-            .max_by(|(_, a), (_, b)| a.cmp(b))
-            .context("no maximum in list")?;
-        max_elves_list.push(*max_elf);
-        elves.remove(max_elf_idx);
+    results.sort();
+    for res in results {
+        info!("Result aoc{}/day {}/{}: {:?}", res.year, res.day, res.part, res.result);
     }
-
-    let max_elf: i32 = max_elves_list.iter().sum();
-
-    info!("Biggest calorie take is {max_elf}");
-
-    Ok(())
-}
-
-#[tracing::instrument]
-pub async fn aoc2022_day1_part1() -> Result<()> {
-    let mut elves: Vec<i32> = Vec::new();
-
-    let mut input = read_file_lines("aoc2022/day1_1.txt").await?;
-
-    let mut cur_elf = 0;
-    while let Some(v) = input.next().await {
-        if v.is_empty() {
-            trace!("Elf carries {cur_elf} calories, backpack concluded, pushing on list");
-            elves.push(cur_elf);
-            cur_elf = 0;
-        } else {
-            let v: i32 = v.parse().context("not a number on line")?;
-            cur_elf += v;
-        }
-    }
-
-    debug!("Done calculating list");
-
-    let max_elf = elves.par_iter().max().context("no maximum in list")?;
-
-    info!("Biggest calorie take is {max_elf}");
-
+    let time_taken = start.elapsed();
+    info!("Took {:.3} secs", time_taken.as_secs_f64());
     Ok(())
 }

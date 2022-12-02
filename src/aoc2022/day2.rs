@@ -17,7 +17,12 @@ pub async fn part1() -> Result<Reportable> {
         rounds.push(round);
     }
     let score = rounds.par_iter().map(|f| f.right_score()).sum();
-    Ok(Reportable { year: 2022, day: 2, part: 1.into(), result: TaskResult::U32(score) })
+    Ok(Reportable {
+        year: 2022,
+        day: 2,
+        part: 1.into(),
+        result: TaskResult::U32(score),
+    })
 }
 
 #[cfg(test)]
@@ -28,11 +33,14 @@ pub async fn validate_part1() -> Result<()> {
     for line in input {
         rounds.push(Round::from_str(line)?);
     }
-    assert_eq!(vec![
-        Round(Play::Rock, Play::Paper),
-        Round(Play::Paper, Play::Rock),
-        Round(Play::Scissors, Play::Scissors),
-    ], rounds);
+    assert_eq!(
+        vec![
+            Round(Play::Rock, Play::Paper),
+            Round(Play::Paper, Play::Rock),
+            Round(Play::Scissors, Play::Scissors),
+        ],
+        rounds
+    );
     assert_eq!(15u32, rounds.iter().map(|f| f.right_score()).sum());
     Ok(())
 }
@@ -50,7 +58,12 @@ pub async fn part2() -> Result<Reportable> {
         rounds.push(round);
     }
     let score = rounds.par_iter().map(|f| f.right_score()).sum();
-    Ok(Reportable { year: 2022, day: 2, part: 1.into(), result: TaskResult::U32(score) })
+    Ok(Reportable {
+        year: 2022,
+        day: 2,
+        part: 2.into(),
+        result: TaskResult::U32(score),
+    })
 }
 
 #[cfg(test)]
@@ -61,17 +74,23 @@ pub async fn validate_part2() -> Result<()> {
     for line in input {
         rounds.push(ORound::from_str(line)?);
     }
-    assert_eq!(vec![
-        ORound(Play::Rock, Outcome::Draw),
-        ORound(Play::Paper, Outcome::Loose),
-        ORound(Play::Scissors, Outcome::Win),
-    ], rounds);
+    assert_eq!(
+        vec![
+            ORound(Play::Rock, Outcome::Draw),
+            ORound(Play::Paper, Outcome::Loose),
+            ORound(Play::Scissors, Outcome::Win),
+        ],
+        rounds
+    );
     let rounds: Vec<Round> = rounds.into_iter().map(|f| f.into()).collect();
-    assert_eq!(vec![
-        Round(Play::Rock, Play::Rock),
-        Round(Play::Paper, Play::Rock),
-        Round(Play::Scissors, Play::Rock),
-    ], rounds);
+    assert_eq!(
+        vec![
+            Round(Play::Rock, Play::Rock),
+            Round(Play::Paper, Play::Rock),
+            Round(Play::Scissors, Play::Rock),
+        ],
+        rounds
+    );
     assert_eq!(12u32, rounds.iter().map(|f| f.right_score()).sum());
     Ok(())
 }
@@ -84,7 +103,7 @@ impl FromStr for ORound {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (left, right) = s.split_once(' ').expect("invalid play line");
-        Ok(Self( left.parse()?, right.parse()? ))
+        Ok(Self(left.parse()?, right.parse()?))
     }
 }
 
@@ -134,7 +153,7 @@ impl FromStr for Round {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (left, right) = s.split_once(' ').expect("invalid play line");
-        Ok(Self( left.parse()?, right.parse()? ))
+        Ok(Self(left.parse()?, right.parse()?))
     }
 }
 
@@ -162,7 +181,7 @@ impl FromStr for Outcome {
 pub enum Play {
     Rock,
     Paper,
-    Scissors
+    Scissors,
 }
 
 impl FromStr for Play {
@@ -171,9 +190,9 @@ impl FromStr for Play {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         use Play::*;
         Ok(match s.to_lowercase().as_str() {
-            "a"|"x" => Rock,
-            "b"|"y" => Paper,
-            "c"|"z" => Scissors,
+            "a" | "x" => Rock,
+            "b" | "y" => Paper,
+            "c" | "z" => Scissors,
             _ => return Err(color_eyre::Report::msg("invalid rock-paper-scissor play")),
         })
     }
@@ -189,7 +208,7 @@ impl Eq for Play {}
 
 impl PartialOrd for Play {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        use std::cmp::Ordering::{Less, Equal, Greater};
+        use std::cmp::Ordering::{Equal, Greater, Less};
         Some(match (self, other) {
             (Play::Rock, Play::Rock) => Equal,
             (Play::Rock, Play::Paper) => Less,

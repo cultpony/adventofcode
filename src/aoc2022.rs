@@ -1,7 +1,7 @@
 use crate::*;
 
-mod day2;
 mod day1;
+mod day2;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum TaskResult {
@@ -60,13 +60,19 @@ pub async fn main() -> Result<()> {
     while let Some(res) = set.join_next().await {
         let res = res??;
         results.push(res);
-        info!("Finished Task aoc{}/day {}/{}: {:?}", res.year, res.day, res.part, res.result);
+        info!(
+            "Finished Task aoc{}/day {}/{}: {:?}",
+            res.year, res.day, res.part, res.result
+        );
     }
     results.sort();
     for res in results {
-        info!("Result aoc{}/day {}/{}: {:?}", res.year, res.day, res.part, res.result);
+        info!(
+            "Result aoc{}/day {}/{}: {:?}",
+            res.year, res.day, res.part, res.result
+        );
     }
     let time_taken = start.elapsed();
-    info!("Took {:.3} secs", time_taken.as_secs_f64());
+    info!("Took {:.5} secs", time_taken.as_secs_f64());
     Ok(())
 }

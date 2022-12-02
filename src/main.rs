@@ -4,8 +4,8 @@ pub use color_eyre::{eyre::Context, Result};
 pub use rayon::prelude::*;
 use tokio::io::AsyncBufReadExt;
 use tokio_stream::{Stream, StreamExt};
-use tracing_error::prelude::*;
 pub use tracing::{debug, error, info, trace, warn};
+use tracing_error::prelude::*;
 use tracing_subscriber::prelude::*;
 
 mod aoc2022;
@@ -30,7 +30,7 @@ pub async fn main() -> Result<()> {
     let fmt_layer = tracing_subscriber::fmt::layer().with_target(false);
     let filter_layer = tracing_subscriber::EnvFilter::try_from_default_env()
         .or_else(|_| tracing_subscriber::EnvFilter::try_new("debug"))?;
-    
+
     tracing_subscriber::registry()
         .with(filter_layer)
         .with(fmt_layer)

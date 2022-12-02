@@ -1,6 +1,6 @@
+use crate::{aoc2022::TaskResult, *};
 use color_eyre::eyre::ContextCompat;
 use rayon::prelude::IntoParallelRefIterator;
-use crate::{*, aoc2022::TaskResult};
 
 use super::Reportable;
 
@@ -41,7 +41,12 @@ pub async fn part2() -> Result<Reportable> {
 
     info!("Biggest calorie take is {max_elf}");
 
-    Ok(Reportable { year: 2022, day: 1, part: 1.into(), result: TaskResult::I32(max_elf) })
+    Ok(Reportable {
+        year: 2022,
+        day: 1,
+        part: 1.into(),
+        result: TaskResult::I32(max_elf),
+    })
 }
 
 #[tracing::instrument]
@@ -68,5 +73,10 @@ pub async fn part1() -> Result<Reportable> {
 
     info!("Biggest calorie take is {max_elf}");
 
-    Ok(Reportable { year: 2022, day: 1, part: 2.into(), result: TaskResult::I32(*max_elf) })
+    Ok(Reportable {
+        year: 2022,
+        day: 1,
+        part: 2.into(),
+        result: TaskResult::I32(*max_elf),
+    })
 }

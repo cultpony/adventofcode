@@ -1,9 +1,9 @@
 use std::pin::Pin;
 
 pub use color_eyre::{eyre::Context, Result};
-pub use tracing::{debug, error, info, trace, warn};
 pub use rayon::prelude::*;
 pub use tokio_stream::StreamExt;
+pub use tracing::{debug, error, info, trace, warn};
 
 use tokio::io::AsyncBufReadExt;
 use tokio_stream::Stream;

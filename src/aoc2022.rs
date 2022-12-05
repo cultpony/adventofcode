@@ -2,6 +2,7 @@ use crate::*;
 
 pub mod day1;
 pub mod day2;
+pub mod day3;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -12,6 +13,10 @@ pub enum TaskResult {
     U64(u64),
     I32(i32),
     U32(u32),
+    I16(i16),
+    U16(u16),
+    I8(i8),
+    U8(u8),
     /// Task not yet implemented
     Todo,
 }
@@ -57,6 +62,8 @@ pub async fn main() -> Result<()> {
     set.spawn(day1::part2());
     set.spawn(day2::part1());
     set.spawn(day2::part2());
+    set.spawn(day3::part1());
+    set.spawn(day3::part2());
     let mut results = Vec::new();
     while let Some(res) = set.join_next().await {
         let res = res??;

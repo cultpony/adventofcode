@@ -3,6 +3,7 @@ use crate::*;
 pub mod day1;
 pub mod day2;
 pub mod day3;
+pub mod day4;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -64,6 +65,8 @@ pub async fn main() -> Result<()> {
     set.spawn(day2::part2());
     set.spawn(day3::part1());
     set.spawn(day3::part2());
+    set.spawn(day4::part1());
+    set.spawn(day4::part2());
     let mut results = Vec::new();
     while let Some(res) = set.join_next().await {
         let res = res??;

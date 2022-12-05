@@ -1,7 +1,6 @@
-use std::{collections::HashSet, ops::Range, str::FromStr};
+use std::{ops::Range, str::FromStr};
 
 use color_eyre::Report;
-use itertools::Itertools;
 
 use crate::*;
 
@@ -93,7 +92,7 @@ impl ElfRange {
     }
     pub fn any_overlap(&self, other: &Self) -> bool {
         if other.0.start > self.0.end || self.0.start > other.0.end {
-            debug!("Excluding range due to start/end exclusion: {self:?} {other:?}");
+            trace!("Excluding range due to start/end exclusion: {self:?} {other:?}");
             return false;
         }
         other.0.clone().any(|x| self.0.contains(&x))
@@ -104,11 +103,11 @@ impl ElfRange {
     }
     pub fn fully_contains(&self, other: &Self) -> bool {
         if other.0.start == self.0.start && other.0.end == self.0.end {
-            debug!("Range equal overlap: {self:?} {other:?}");
+            trace!("Range equal overlap: {self:?} {other:?}");
             return true;
         }
         if other.0.start > self.0.end || self.0.start > other.0.end {
-            debug!("Excluding range due to start/end exclusion: {self:?} {other:?}");
+            trace!("Excluding range due to start/end exclusion: {self:?} {other:?}");
             return false;
         }
         (other.0.clone().all(|x| self.0.contains(&x))
@@ -122,7 +121,7 @@ impl FromStr for ElfRange {
     type Err = Report;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (start, end) = match s.split_once("-") {
+        let (start, end) = match s.split_once('-') {
             None => return Err(Report::msg("missing - delimiter")),
             Some(s) => s,
         };

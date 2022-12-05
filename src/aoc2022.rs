@@ -4,10 +4,12 @@ pub mod day1;
 pub mod day2;
 pub mod day3;
 pub mod day4;
+pub mod day5;
 
 #[allow(dead_code)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum TaskResult {
+    String(String),
     I128(i128),
     U128(u128),
     I64(i64),
@@ -22,7 +24,7 @@ pub enum TaskResult {
     Todo,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Reportable {
     year: i16,
     day: i8,
@@ -67,10 +69,12 @@ pub async fn main() -> Result<()> {
     set.spawn(day3::part2());
     set.spawn(day4::part1());
     set.spawn(day4::part2());
+    set.spawn(day5::part1());
+    set.spawn(day5::part2());
     let mut results = Vec::new();
     while let Some(res) = set.join_next().await {
         let res = res??;
-        results.push(res);
+        results.push(res.clone());
         info!(
             "Finished Task aoc{}/day {}/{}: {:?}",
             res.year, res.day, res.part, res.result

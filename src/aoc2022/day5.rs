@@ -164,7 +164,7 @@ impl Harbor {
 
     pub fn all_moves_v9001(&mut self, moves: Vec<Move>) {
         for mov in moves {
-            debug!("Executing 9001 move {mov:?}");
+            trace!("Executing 9001 move {mov:?}");
             assert!(self.0.len() > mov.from - 1);
             assert!(self.0.len() > mov.to - 1);
             let mut out = Vec::new();

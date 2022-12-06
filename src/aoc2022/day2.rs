@@ -41,7 +41,7 @@ pub async fn validate_part1() -> Result<()> {
         ],
         rounds
     );
-    assert_eq!(15u32, rounds.iter().map(|f| f.right_score()).sum());
+    assert_eq!(15u32, rounds.iter().map(|f| f.right_score()).sum::<u32>());
     Ok(())
 }
 
@@ -91,7 +91,7 @@ pub async fn validate_part2() -> Result<()> {
         ],
         rounds
     );
-    assert_eq!(12u32, rounds.iter().map(|f| f.right_score()).sum());
+    assert_eq!(12u32, rounds.iter().map(|f| f.right_score()).sum::<u32>());
     Ok(())
 }
 

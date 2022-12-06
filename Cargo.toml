@@ -12,16 +12,19 @@ regex = "1.7"
 chrono = "0.4.23"
 bit-vec = "0.6"
 itertools = "0.10"
+itermore = "0.5"
 peg = "0.8"
 rayon = "1.6"
 tokio = { version = "1.22.0", features = ["full", "tracing"] }
 tokio-stream = { version = "0.1.11", features = ["io-util", "fs"] }
+tokio-util = { version = "0.7.4", features = ["full"] }
 tracing = "0.1"
 tracing-error = "0.2.0"
 tracing-subscriber = { version = "0.3.16", features = ["std", "env-filter", "fmt"] }
 
 [dev-dependencies]
 criterion = { version = "0.3", features = ["stable"] }
+tracing-test = "0.1"
 
 [[bench]]
 name = "aoc2022"
@@ -33,6 +36,12 @@ harness = false
 opt-level = 3
 debug = false
 rpath = false
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.dev]
+opt-level = 1
 
 [profile.minimum]
 inherits = "release"

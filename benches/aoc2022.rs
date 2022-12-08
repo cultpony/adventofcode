@@ -66,6 +66,15 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         b.to_async(tokio::runtime::Runtime::new().unwrap())
             .iter(day7::part2)
     });
+
+    c.bench_function("aoc2022d8p1", |b| {
+        b.to_async(tokio::runtime::Runtime::new().unwrap())
+            .iter(day8::part1)
+    });
+    c.bench_function("aoc2022d8p2", |b| {
+        b.to_async(tokio::runtime::Runtime::new().unwrap())
+            .iter(day8::part2)
+    });
 }
 
 criterion_group!(benches, criterion_benchmark);

@@ -70,7 +70,7 @@ pub async fn part2() -> Result<Reportable> {
     assert!(unused_now < needed_free);
     let to_be_freed = needed_free - unused_now;
 
-    debug!("Need to free {to_be_freed}");
+    trace!("Need to free {to_be_freed}");
     let freed_by_delete = fs
         .dirs_bigger_than_sized(to_be_freed)
         .iter()
@@ -269,7 +269,7 @@ impl FilesystemRef {
     ///
     /// Files from subdirectories are returned first
     pub fn dirs_at_most_sized(&self, size_max: usize) -> Vec<Rc<INode>> {
-        debug!(
+        trace!(
             "Looking for small folders under {size_max} at {}",
             self.current_path()
         );
@@ -294,12 +294,12 @@ impl FilesystemRef {
 
     /// Returns directories of atleast this size
     pub fn dirs_bigger_than_sized(&self, size_min: usize) -> Vec<Rc<INode>> {
-        debug!(
+        trace!(
             "Looking for small folders under {size_min} at {}",
             self.current_path()
         );
         let smaller = self.sub_dirs().into_iter().filter(|x| {
-            debug!(
+            trace!(
                 "Checking folder {} at {} if smaller than {size_min}: {}",
                 x.name(),
                 self.current_path(),

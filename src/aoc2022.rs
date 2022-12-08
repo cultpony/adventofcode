@@ -7,6 +7,7 @@ pub mod day4;
 pub mod day5;
 pub mod day6;
 pub mod day7;
+pub mod day8;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -79,6 +80,8 @@ pub async fn main() -> Result<()> {
     set.spawn(day6::part2());
     set.spawn(day7::part1());
     set.spawn(day7::part2());
+    set.spawn(day8::part1());
+    set.spawn(day8::part2());
     let mut results = Vec::new();
     while let Some(res) = set.join_next().await {
         let res = res??;

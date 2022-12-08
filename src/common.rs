@@ -1,3 +1,5 @@
+pub mod matrix;
+
 use std::{borrow::Cow, pin::Pin};
 
 pub use color_eyre::{eyre::Context, Result};

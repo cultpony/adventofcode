@@ -1,6 +1,7 @@
 use crate::*;
 
 pub mod day1;
+pub mod day10;
 pub mod day2;
 pub mod day3;
 pub mod day4;
@@ -10,81 +11,70 @@ pub mod day7;
 pub mod day8;
 pub mod day9;
 
-#[allow(dead_code)]
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub enum TaskResult {
-    String(String),
-    Usize(usize),
-    Isize(isize),
-    I128(i128),
-    U128(u128),
-    I64(i64),
-    U64(u64),
-    I32(i32),
-    U32(u32),
-    I16(i16),
-    U16(u16),
-    I8(i8),
-    U8(u8),
-    /// Task not yet implemented
-    Todo,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Reportable {
-    year: i16,
-    day: i8,
-    part: TaskPart,
-    result: TaskResult,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub enum TaskPart {
-    Part1,
-    Part2,
-}
-
-impl From<u8> for TaskPart {
-    fn from(u: u8) -> Self {
-        match u {
-            1 => TaskPart::Part1,
-            2 => TaskPart::Part2,
-            _ => panic!("invalid task part"),
-        }
-    }
-}
-
-impl std::fmt::Display for TaskPart {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            TaskPart::Part1 => f.write_str("part 1"),
-            TaskPart::Part2 => f.write_str("part 2"),
-        }
-    }
-}
-
-#[tracing::instrument]
-pub async fn main() -> Result<()> {
+#[tracing::instrument(skip(tc))]
+pub async fn main(tc: TaskConfig) -> Result<()> {
     let start = tokio::time::Instant::now();
     let mut set = tokio::task::JoinSet::new();
-    set.spawn(day1::part1());
-    set.spawn(day1::part2());
-    set.spawn(day2::part1());
-    set.spawn(day2::part2());
-    set.spawn(day3::part1());
-    set.spawn(day3::part2());
-    set.spawn(day4::part1());
-    set.spawn(day4::part2());
-    set.spawn(day5::part1());
-    set.spawn(day5::part2());
-    set.spawn(day6::part1());
-    set.spawn(day6::part2());
-    set.spawn(day7::part1());
-    set.spawn(day7::part2());
-    set.spawn(day8::part1());
-    set.spawn(day8::part2());
-    set.spawn(day9::part1());
-    set.spawn(day9::part2());
+    if tc.is(1, 1) {
+        set.spawn(day1::part1());
+    }
+    if tc.is(1, 2) {
+        set.spawn(day1::part2());
+    }
+    if tc.is(2, 1) {
+        set.spawn(day2::part1());
+    }
+    if tc.is(2, 2) {
+        set.spawn(day2::part2());
+    }
+    if tc.is(3, 1) {
+        set.spawn(day3::part1());
+    }
+    if tc.is(3, 2) {
+        set.spawn(day3::part2());
+    }
+    if tc.is(4, 1) {
+        set.spawn(day4::part1());
+    }
+    if tc.is(4, 2) {
+        set.spawn(day4::part2());
+    }
+    if tc.is(5, 1) {
+        set.spawn(day5::part1());
+    }
+    if tc.is(5, 2) {
+        set.spawn(day5::part2());
+    }
+    if tc.is(6, 1) {
+        set.spawn(day6::part1());
+    }
+    if tc.is(6, 2) {
+        set.spawn(day6::part2());
+    }
+    if tc.is(7, 1) {
+        set.spawn(day7::part1());
+    }
+    if tc.is(7, 2) {
+        set.spawn(day7::part2());
+    }
+    if tc.is(8, 1) {
+        set.spawn(day8::part1());
+    }
+    if tc.is(8, 2) {
+        set.spawn(day8::part2());
+    }
+    if tc.is(9, 1) {
+        set.spawn(day9::part1());
+    }
+    if tc.is(9, 2) {
+        set.spawn(day9::part2());
+    }
+    if tc.is(10, 1) {
+        set.spawn(day10::part1());
+    }
+    if tc.is(10, 2) {
+        set.spawn(day10::part2());
+    }
     let mut results = Vec::new();
     while let Some(res) = set.join_next().await {
         let res = res??;

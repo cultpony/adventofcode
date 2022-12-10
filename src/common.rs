@@ -3,6 +3,7 @@ pub mod matrix;
 use std::{borrow::Cow, pin::Pin};
 
 pub use color_eyre::eyre::eyre as report;
+use color_eyre::Report;
 pub use color_eyre::{eyre::Context, Result};
 pub use rayon::prelude::*;
 pub use tokio_stream::StreamExt;
@@ -33,4 +34,105 @@ pub fn skip_empty_lines<F: Stream<Item = String> + 'static + Send>(
     f: F,
 ) -> Pin<Box<dyn Stream<Item = String> + Send>> {
     Box::pin(f.filter(|f| !f.is_empty()))
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub enum TaskResult {
+    String(String),
+    Usize(usize),
+    Isize(isize),
+    I128(i128),
+    U128(u128),
+    I64(i64),
+    U64(u64),
+    I32(i32),
+    U32(u32),
+    I16(i16),
+    U16(u16),
+    I8(i8),
+    U8(u8),
+    /// Task not yet implemented
+    Todo,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Reportable {
+    pub(crate) year: i16,
+    pub(crate) day: i8,
+    pub(crate) part: TaskPart,
+    pub(crate) result: TaskResult,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum TaskPart {
+    Part1,
+    Part2,
+}
+
+impl From<u8> for TaskPart {
+    fn from(u: u8) -> Self {
+        match u {
+            1 => TaskPart::Part1,
+            2 => TaskPart::Part2,
+            _ => panic!("invalid task part"),
+        }
+    }
+}
+
+impl From<TaskPart> for u8 {
+    fn from(val: TaskPart) -> Self {
+        match val {
+            TaskPart::Part1 => 1,
+            TaskPart::Part2 => 2,
+        }
+    }
+}
+
+impl std::str::FromStr for TaskPart {
+    type Err = Report;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "1" => Ok(TaskPart::Part1),
+            "2" => Ok(TaskPart::Part2),
+            v => Err(report!("Invalid task part {v:?}")),
+        }
+    }
+}
+
+impl std::fmt::Display for TaskPart {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TaskPart::Part1 => f.write_str("part 1"),
+            TaskPart::Part2 => f.write_str("part 2"),
+        }
+    }
+}
+
+#[derive(clap::Parser, Debug)]
+pub struct TaskConfig {
+    /// Which day to run, if not specified runs all days
+    #[arg(short, long)]
+    pub(crate) day: Option<u8>,
+    /// Which parts to run. If this is specified without day, runs the given parts of all days
+    #[arg(short, long)]
+    pub(crate) part: Option<TaskPart>,
+}
+
+impl TaskConfig {
+    pub fn is(&self, day: u8, part: u8) -> bool {
+        let is_day = match self.day {
+            None => true,
+            Some(v) => v == day,
+        };
+        let is_part = match self.part {
+            None => true,
+            Some(v) => {
+                let v: u8 = v.into();
+                v == part
+            }
+        };
+        is_day && is_part
+    }
 }

@@ -1,3 +1,5 @@
+use aoc::TaskConfig;
+use clap::Parser;
 use tracing_subscriber::prelude::*;
 
 pub mod aoc2022;
@@ -31,7 +33,9 @@ pub async fn main() -> Result<()> {
 
     color_eyre::install()?;
 
-    aoc2022::main().await?;
+    let tc = TaskConfig::parse();
+
+    aoc2022::main(tc).await?;
 
     Ok(())
 }

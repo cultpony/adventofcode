@@ -26,7 +26,7 @@ pub async fn part1() -> Result<Reportable> {
 
     let matrix: TreeMatrix = matrix_lines.into();
 
-    debug!("Read in matrix: {matrix:#?}");
+    trace!("Read in matrix: {matrix:#?}");
 
     let mut num_long_trees = 0;
     for x in 1..matrix.size_x() - 1 {
@@ -68,7 +68,7 @@ pub async fn part2() -> Result<Reportable> {
 
     let matrix: TreeMatrix = matrix_lines.into();
 
-    debug!("Read in matrix: {matrix:#?}");
+    trace!("Read in matrix: {matrix:#?}");
 
     let mut best_scenic = 0;
     for x in 1..matrix.size_x() - 1 {

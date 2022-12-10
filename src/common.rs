@@ -2,6 +2,7 @@ pub mod matrix;
 
 use std::{borrow::Cow, pin::Pin};
 
+pub use color_eyre::eyre::eyre as report;
 pub use color_eyre::{eyre::Context, Result};
 pub use rayon::prelude::*;
 pub use tokio_stream::StreamExt;

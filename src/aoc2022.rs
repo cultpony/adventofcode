@@ -2,6 +2,7 @@ use crate::*;
 
 pub mod day1;
 pub mod day10;
+pub mod day11;
 pub mod day2;
 pub mod day3;
 pub mod day4;
@@ -74,6 +75,12 @@ pub async fn main(tc: TaskConfig) -> Result<()> {
     }
     if tc.is(10, 2) {
         set.spawn(day10::part2());
+    }
+    if tc.is(11, 1) {
+        set.spawn(day11::part1());
+    }
+    if tc.is(11, 2) {
+        set.spawn(day11::part2());
     }
     let mut results = Vec::new();
     while let Some(res) = set.join_next().await {

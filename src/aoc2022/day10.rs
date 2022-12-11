@@ -293,7 +293,7 @@ mod test {
     fn test_long_prog() {
         let program = TEST_PROG_1;
         let mut program = program
-            .split("\n")
+            .split('\n')
             .map(|x| x.trim().parse().unwrap())
             .collect_vec();
         program.push(Instruction::Stop);

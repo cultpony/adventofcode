@@ -30,6 +30,30 @@ pub async fn read_file_chars<'a>(filename: &str) -> Result<Cow<'a, [u8]>> {
     Ok(buf)
 }
 
+pub async fn read_file_chunks(filename: &str, chunk_start: &str) -> Result<Vec<String>> {
+    let mut chunk_buf: Vec<String> = Vec::new();
+    let mut chunks: Vec<String> = Vec::new();
+    let mut lines = read_file_lines(filename).await?;
+    while let Some(line) = lines.next().await {
+        if line.starts_with(chunk_start) {
+            chunk_buf.clear();
+            chunk_buf.push(line);
+            while let Some(line) = lines.next().await {
+                if line.is_empty() {
+                    chunks.push(chunk_buf.join("\n"));
+                    break;
+                }
+                chunk_buf.push(line);
+            }
+        }
+    }
+    if !chunk_buf.is_empty() {
+        chunks.push(chunk_buf.join("\n"));
+        chunk_buf.clear();
+    }
+    Ok(chunks)
+}
+
 pub fn skip_empty_lines<F: Stream<Item = String> + 'static + Send>(
     f: F,
 ) -> Pin<Box<dyn Stream<Item = String> + Send>> {

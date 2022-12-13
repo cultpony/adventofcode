@@ -6,9 +6,17 @@ pub mod aoc2022;
 pub mod common;
 pub use common::*;
 
+pub fn main() -> Result<()> {
+    tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .thread_stack_size(10 * 1024 * 1024)
+        .build()
+        .unwrap()
+        .block_on(async { tokio_main().await })
+}
+
 #[tracing::instrument]
-#[tokio::main]
-pub async fn main() -> Result<()> {
+pub async fn tokio_main() -> Result<()> {
     let fmt = tracing_subscriber::fmt::format()
         .with_level(true)
         .with_file(false)

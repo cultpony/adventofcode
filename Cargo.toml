@@ -22,6 +22,9 @@ tracing = "0.1"
 tracing-error = "0.2.0"
 tracing-subscriber = { version = "0.3.16", features = ["std", "env-filter", "fmt"] }
 clap = { version = "4.0", features = ["derive"] }
+either = { version = "1.8.0", features = ["serde"] }
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
 
 [dev-dependencies]
 criterion = { version = "0.3", features = ["stable"] }
